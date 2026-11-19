@@ -15,7 +15,7 @@ Ouvrir `ios/Kaaris.xcodeproj`, choisir le schéma **Kaaris** et lancer sur un si
 
 Le flux Google Agenda nécessite l’URL publique de l’API, un client OAuth Google et la configuration Auth Supabase dans `ios/Local.xcconfig`. L’API lit les disponibilités et exporte les séances après validation. Pour la bêta, les modifications ou l’effacement d’événements déjà exportés se font dans Google Agenda. Les changements locaux n’écrasent pas l’événement distant.
 
-Le schéma Supabase est déployé. Les séances et le profil du prototype restent locaux. Le code serveur prévoit Gemma 4 via llama.cpp et une réponse de secours. Les appels IA depuis le coach iOS et les relances distantes nécessitent une intégration supplémentaire. Le widget compilé à partir du build 2 ouvre le pointage depuis l’écran verrouillé. La configuration App Groups des deux cibles active l’affichage de la prochaine séance et du compteur. La lecture iOS du temps d’écran dépend de l’autorisation Family Controls.
+Le schéma Supabase est déployé. Les séances et le profil du prototype restent locaux. Le coach en ligne utilise la session KAARIS et peut demander à Gemma 4 de choisir une variante de check-in. Le réglage est désactivé par défaut. Les réponses locales restent disponibles si l’API est absente ou indisponible. Les relances iOS sont locales. Le widget compilé à partir du build 2 ouvre le pointage depuis l’écran verrouillé. La configuration App Groups des deux cibles active l’affichage de la prochaine séance et du compteur. La lecture iOS du temps d’écran dépend de l’autorisation Family Controls.
 
 ## Maquettes et documents
 

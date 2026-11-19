@@ -12,14 +12,20 @@ let muted = Color(red: 166/255, green: 166/255, blue: 174/255)
 struct KaarisApp: App {
     @UIApplicationDelegateAdaptor(NotificationDelegate.self) private var notifications
     @StateObject private var store = CoachStore()
+    @StateObject private var connection = KaarisConnection()
 
     var body: some Scene {
         WindowGroup {
             KaarisRoot()
                 .environmentObject(store)
+                .environmentObject(connection)
                 .environment(\.locale, Locale(identifier: "fr_FR"))
                 .preferredColorScheme(.dark)
                 .tint(acid)
+                .task { connection.restoreAccount() }
+                .onChange(of: connection.isSignedIn) { wasSignedIn, isSignedIn in
+                    if wasSignedIn && !isSignedIn { store.preferences.onlineCoachConsent = nil }
+                }
         }
     }
 }

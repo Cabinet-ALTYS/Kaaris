@@ -136,6 +136,7 @@ private struct OptionalNumberField: View {
 
 struct SettingsScreen: View {
     @EnvironmentObject private var store: CoachStore
+    @EnvironmentObject private var connection: KaarisConnection
     @Environment(\.openURL) private var openURL
     @State private var notifyDenied = false
 
@@ -194,6 +195,25 @@ struct SettingsScreen: View {
 
             NavigationLink { AgendaScreen() } label: { Label("Google Agenda", systemImage: "calendar") }
                 .buttonStyle(ActionStyle(filled: false))
+
+            if !store.isDemo && connection.coachConfigured {
+                VStack(alignment: .leading, spacing: 8) {
+                    Toggle("Activer le coach en ligne", isOn: Binding(
+                        get: { store.preferences.onlineCoachConsented },
+                        set: { store.preferences.onlineCoachConsent = $0 }
+                    ))
+                    .disabled(!connection.isSignedIn)
+                    Text("À ta demande, le coach en ligne reçoit le type de check-in et tes réglages de ton.")
+                        .font(.footnote)
+                        .foregroundStyle(muted)
+                    if !connection.isSignedIn {
+                        Text("Connecte-toi à ton compte KAARIS depuis Google Agenda.")
+                            .font(.footnote)
+                            .foregroundStyle(muted)
+                    }
+                }
+                .kPanel()
+            }
 
             SectionLabel(text: "OBJECTIF ET PROFIL")
             ProfileFields(profile: $store.profile)

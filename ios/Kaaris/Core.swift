@@ -64,7 +64,9 @@ struct CoachPreferences: Codable, Equatable {
     var quietStartHour = 22
     var quietEndHour = 7
     var pausedUntil: Date?
+    var onlineCoachConsent: Bool?
 
+    var onlineCoachConsented: Bool { onlineCoachConsent == true }
     var maxLanguageIntensity: Int { bluntConsent ? 3 : 1 }
     var effectiveLanguageIntensity: Int { max(0, min(maxLanguageIntensity, languageIntensity)) }
 

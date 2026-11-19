@@ -293,7 +293,7 @@ private struct GoogleBookingResults: Decodable {
     let sessions: [Result]
 }
 
-private struct GoogleAgendaAPI {
+private struct KaarisAPI {
     struct Status: Decodable {
         let available: Bool?
         let connected: Bool
@@ -320,10 +320,11 @@ private struct GoogleAgendaAPI {
         _ path: String,
         method: String,
         body: Data?,
-        token: String
+        token: String,
+        timeout: TimeInterval = 30
     ) async throws -> Data {
-        let url = rootURL.appending(path: "v1/google").appending(path: path)
-        var request = URLRequest(url: url, timeoutInterval: 30)
+        let url = rootURL.appending(path: "v1").appending(path: path)
+        var request = URLRequest(url: url, timeoutInterval: timeout)
         request.httpMethod = method
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
@@ -353,6 +354,25 @@ private struct GoogleAgendaAPI {
         }
         return try decoder.decode(type, from: data)
     }
+}
+
+struct CoachOnlineCheckIn: Encodable, Equatable {
+    let event = "check_in"
+    let insultLevel: Int
+    let egoLevel: Int
+    let bluntToneConsented: Bool
+
+    init(preferences: CoachPreferences) {
+        insultLevel = preferences.effectiveLanguageIntensity
+        egoLevel = max(0, min(3, preferences.egoPressure))
+        bluntToneConsented = preferences.bluntConsent
+    }
+}
+
+private struct CoachOnlineResponse: Decodable {
+    enum Source: String, Decodable { case model, template }
+    let text: String
+    let source: Source
 }
 
 private struct AgendaProposal {
@@ -476,22 +496,25 @@ private final class CalendarConsent: NSObject, ASWebAuthenticationPresentationCo
 }
 
 @MainActor
-private final class AgendaModel: ObservableObject {
-    @Published private(set) var session: AgendaSession?
-    @Published private(set) var available: Bool?
-    @Published private(set) var connected: Bool?
-    @Published private(set) var calendars: [GoogleCalendar] = []
-    @Published private(set) var calendarIDs: Set<String> = []
-    @Published private(set) var proposal: AgendaProposal?
-    @Published private(set) var working = false
-    @Published private(set) var notice: String?
+final class KaarisConnection: ObservableObject {
+    @Published fileprivate private(set) var session: AgendaSession?
+    @Published fileprivate private(set) var available: Bool?
+    @Published fileprivate private(set) var connected: Bool?
+    @Published fileprivate private(set) var calendars: [GoogleCalendar] = []
+    @Published fileprivate private(set) var calendarIDs: Set<String> = []
+    @Published fileprivate private(set) var proposal: AgendaProposal?
+    @Published fileprivate private(set) var working = false
+    @Published fileprivate private(set) var notice: String?
 
     private let configuration = AgendaConfiguration()
     private let consent = CalendarConsent()
+    private let demo = ProcessInfo.processInfo.arguments.contains("--demo")
     private var restored = false
 
-    var authConfigured: Bool { auth != nil }
-    var googleConfigured: Bool { configuration.apiURL != nil }
+    fileprivate var authConfigured: Bool { !demo && auth != nil }
+    fileprivate var googleConfigured: Bool { !demo && configuration.apiURL != nil }
+    var isSignedIn: Bool { session != nil }
+    var coachConfigured: Bool { authConfigured && googleConfigured }
 
     private var auth: AgendaAuthAPI? {
         guard let url = configuration.supabaseURL, let key = configuration.publishableKey else { return nil }
@@ -502,17 +525,24 @@ private final class AgendaModel: ObservableObject {
         configuration.supabaseURL.map { AgendaSessionKeychain(project: $0) }
     }
 
-    func restore() async {
+    func restoreAccount() {
+        try? loadAccount()
+    }
+
+    private func loadAccount() throws {
+        guard !demo, !restored else { return }
+        if let keychain { session = try keychain.load() }
+        restored = true
+    }
+
+    fileprivate func restore() async {
         await perform {
-            if !restored {
-                if let keychain { session = try keychain.load() }
-                restored = true
-            }
+            try loadAccount()
             if session != nil, googleConfigured { try await updateGoogleStatus() }
         }
     }
 
-    func authenticate(email: String, password: String, signUp: Bool) async {
+    fileprivate func authenticate(email: String, password: String, signUp: Bool) async {
         await perform {
             guard let auth, let keychain else { throw AgendaError.unavailable }
             guard let newSession = try await auth.authenticate(email: email, password: password, signUp: signUp) else {
@@ -520,12 +550,13 @@ private final class AgendaModel: ObservableObject {
                 return
             }
             try keychain.save(newSession)
+            restored = true
             session = newSession
             if googleConfigured { try await updateGoogleStatus() }
         }
     }
 
-    func logout() async {
+    fileprivate func logout() async {
         await perform {
             guard let auth, let keychain else { throw AgendaError.unavailable }
             let token = try? await accessToken()
@@ -544,33 +575,33 @@ private final class AgendaModel: ObservableObject {
         }
     }
 
-    func connect() async {
+    fileprivate func connect() async {
         await perform {
-            let data = try await send("connect", method: "POST")
-            let response = try GoogleAgendaAPI.decode(GoogleAgendaAPI.Connect.self, from: data)
+            let data = try await send("google/connect", method: "POST")
+            let response = try KaarisAPI.decode(KaarisAPI.Connect.self, from: data)
             try await consent.open(response.authorizationUrl)
             try await updateGoogleStatus()
             guard connected == true else { throw AgendaError.googleConsent }
         }
     }
 
-    func disconnect() async {
+    fileprivate func disconnect() async {
         await perform {
-            _ = try await send("connection", method: "DELETE")
+            _ = try await send("google/connection", method: "DELETE")
             resetGoogle()
             connected = false
             notice = "Google Agenda déconnecté."
         }
     }
 
-    func toggleCalendar(_ id: String) {
+    fileprivate func toggleCalendar(_ id: String) {
         guard !working else { return }
         if !calendarIDs.insert(id).inserted { calendarIDs.remove(id) }
         proposal = nil
         notice = nil
     }
 
-    func verify(store: CoachStore) async {
+    fileprivate func verify(store: CoachStore) async {
         await perform {
             proposal = nil
             guard !calendarIDs.isEmpty else { return }
@@ -587,18 +618,18 @@ private final class AgendaModel: ObservableObject {
                 return
             }
 
-            let request = GoogleAgendaAPI.AvailabilityRequest(
+            let request = KaarisAPI.AvailabilityRequest(
                 calendarIds: calendarIDs.sorted(),
                 timeMin: now.addingTimeInterval(-AgendaProposal.calendarMargin),
                 timeMax: end.addingTimeInterval(AgendaProposal.calendarMargin),
                 timeZone: calendar.timeZone.identifier
             )
             let response = try await send(
-                "freebusy",
+                "google/freebusy",
                 method: "POST",
-                body: GoogleAgendaAPI.encode(request)
+                body: KaarisAPI.encode(request)
             )
-            let result = try GoogleAgendaAPI.decode(GoogleFreeBusy.self, from: response)
+            let result = try KaarisAPI.decode(GoogleFreeBusy.self, from: response)
             guard result.unavailableCalendarIds.isEmpty else {
                 notice = "Un agenda sélectionné n’est pas accessible. Change la sélection puis relance la vérification."
                 return
@@ -616,7 +647,7 @@ private final class AgendaModel: ObservableObject {
         }
     }
 
-    func publish(store: CoachStore) async {
+    fileprivate func publish(store: CoachStore) async {
         await perform {
             guard let proposal, proposal.calendarIDs == calendarIDs, !proposal.bookings.isEmpty else {
                 throw AgendaError.staleProposal
@@ -638,13 +669,13 @@ private final class AgendaModel: ObservableObject {
                 }
             }
 
-            let request = GoogleAgendaAPI.BookingRequest(
+            let request = KaarisAPI.BookingRequest(
                 sessions: proposal.bookings,
                 calendarIds: calendarIDs.sorted(),
                 timeZone: Calendar.current.timeZone.identifier
             )
-            let data = try await send("sessions", method: "POST", body: GoogleAgendaAPI.encode(request))
-            let results = try GoogleAgendaAPI.decode(GoogleBookingResults.self, from: data)
+            let data = try await send("google/sessions", method: "POST", body: KaarisAPI.encode(request))
+            let results = try KaarisAPI.decode(GoogleBookingResults.self, from: data)
             var booked = 0
             var failed = 0
             var needsLocalUpdate = false
@@ -677,9 +708,31 @@ private final class AgendaModel: ObservableObject {
         }
     }
 
+    func coachCheckIn(_ input: CoachOnlineCheckIn, consented: Bool) async -> String? {
+        guard coachConfigured, isSignedIn, consented, !working, !Task.isCancelled else {
+            return nil
+        }
+        working = true
+        defer { working = false }
+
+        do {
+            let data = try await send(
+                "coach/message",
+                method: "POST",
+                body: KaarisAPI.encode(input),
+                timeout: 10
+            )
+            let response = try KaarisAPI.decode(CoachOnlineResponse.self, from: data)
+            let text = response.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            return response.source == .model && !text.isEmpty && text.count <= 300 ? text : nil
+        } catch {
+            return nil
+        }
+    }
+
     private func updateGoogleStatus() async throws {
-        let statusData = try await send("status")
-        let status = try GoogleAgendaAPI.decode(GoogleAgendaAPI.Status.self, from: statusData)
+        let statusData = try await send("google/status")
+        let status = try KaarisAPI.decode(KaarisAPI.Status.self, from: statusData)
         connected = status.connected
         guard status.connected else {
             resetGoogle()
@@ -689,8 +742,8 @@ private final class AgendaModel: ObservableObject {
         }
         available = status.available
 
-        let data = try await send("calendars")
-        let result = try GoogleAgendaAPI.decode(GoogleAgendaAPI.Calendars.self, from: data)
+        let data = try await send("google/calendars")
+        let result = try KaarisAPI.decode(KaarisAPI.Calendars.self, from: data)
         let hadCalendars = !calendars.isEmpty
         calendars = result.calendars
         calendarIDs.formIntersection(calendars.map(\.id))
@@ -715,7 +768,9 @@ private final class AgendaModel: ObservableObject {
         }
         guard let auth, let keychain else { throw AgendaError.unavailable }
         do {
-            let renewed = try await auth.refresh(session)
+            // Keep the rotated refresh token even if a view cancels its own request mid-refresh.
+            let refresh = Task { try await auth.refresh(session) }
+            let renewed = try await refresh.value
             try keychain.save(renewed)
             self.session = renewed
             return renewed.accessToken
@@ -727,20 +782,29 @@ private final class AgendaModel: ObservableObject {
         }
     }
 
-    private func send(_ path: String, method: String = "GET", body: Data? = nil) async throws -> Data {
-        guard let url = configuration.apiURL else { throw AgendaError.unavailable }
-        let api = GoogleAgendaAPI(rootURL: url)
+    private func send(
+        _ path: String,
+        method: String = "GET",
+        body: Data? = nil,
+        timeout: TimeInterval = 30
+    ) async throws -> Data {
+        guard !demo, let url = configuration.apiURL else { throw AgendaError.unavailable }
+        try Task.checkCancellation()
+        let api = KaarisAPI(rootURL: url)
         let token = try await accessToken()
+        try Task.checkCancellation()
         do {
-            return try await api.send(path, method: method, body: body, token: token)
+            return try await api.send(path, method: method, body: body, token: token, timeout: timeout)
         } catch let AgendaError.http(status, _) where status == 401 {
+            try Task.checkCancellation()
             let renewed = try await accessToken(replacing: token)
-            return try await api.send(path, method: method, body: body, token: renewed)
+            try Task.checkCancellation()
+            return try await api.send(path, method: method, body: body, token: renewed, timeout: timeout)
         }
     }
 
     private func perform(_ operation: () async throws -> Void) async {
-        guard !working else { return }
+        guard !demo, !working else { return }
         working = true
         notice = nil
         defer { working = false }
@@ -786,7 +850,7 @@ struct AgendaScreen: View {
     }
 
     @EnvironmentObject private var store: CoachStore
-    @StateObject private var model = AgendaModel()
+    @EnvironmentObject private var model: KaarisConnection
     @State private var email = ""
     @State private var password = ""
     @State private var signUp = false

@@ -236,8 +236,21 @@ struct WorkoutDetail: View {
 
 struct CoachScreen: View {
     @EnvironmentObject private var store: CoachStore
+    @EnvironmentObject private var connection: KaarisConnection
     @State private var speaker = AVSpeechSynthesizer()
     @State private var showCall = false
+    @State private var request: Task<Void, Never>?
+    @State private var awaitingCoach = false
+    @State private var modelReply: String?
+    @State private var usedLocalReply = false
+
+    private let localQuestion = "Es-tu allé à ta séance ? Qu’est-ce qui t’aiderait pour la prochaine ?"
+
+    private var onlineContext: CoachOnlineCheckIn? {
+        guard !store.isDemo, connection.coachConfigured, connection.isSignedIn,
+              store.preferences.onlineCoachConsented else { return nil }
+        return CoachOnlineCheckIn(preferences: store.preferences)
+    }
 
     var body: some View {
         KPage {
@@ -278,24 +291,74 @@ struct CoachScreen: View {
             }
             .buttonStyle(ActionStyle(filled: false))
         }
-        .sheet(isPresented: $showCall, onDismiss: { speaker.stopSpeaking(at: .immediate) }) {
+        .sheet(isPresented: $showCall, onDismiss: {
+            clearOnlineReply()
+            speaker.stopSpeaking(at: .immediate)
+        }) {
             KPage {
                 SectionLabel(text: "CHECK-IN VOCAL KAARIS")
                 KTitle(text: "TU EN ES OÙ ?")
-                Text("Es-tu allé à ta séance ? Qu’est-ce qui t’aiderait pour la prochaine ?")
+                if modelReply != nil {
+                    Text("Variante choisie par Gemma")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(acid)
+                } else if usedLocalReply {
+                    Text("Message local")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(muted)
+                }
+                Text(modelReply ?? localQuestion)
                     .font(.title3.weight(.semibold))
                 Button {
-                    let message = AVSpeechUtterance(string: "On fait le point. Es-tu allé à ta séance ? Qu’est-ce qui t’aiderait pour la prochaine ?")
+                    let message = AVSpeechUtterance(string: "On fait le point. \(modelReply ?? localQuestion)")
                     message.voice = AVSpeechSynthesisVoice(language: "fr-FR")
                     message.rate = 0.47
                     speaker.speak(message)
                 } label: {
                     Label("Écouter le coach", systemImage: "speaker.wave.2")
                 }.buttonStyle(ActionStyle())
+                if onlineContext != nil {
+                    Button {
+                        askOnlineCoach()
+                    } label: {
+                        if awaitingCoach {
+                            ProgressView().accessibilityLabel("Réponse du coach en cours")
+                        } else {
+                            Label("Demander au coach en ligne", systemImage: "sparkles")
+                        }
+                    }
+                    .buttonStyle(ActionStyle(filled: false))
+                    .disabled(awaitingCoach)
+                }
                 Button("Fermer") { showCall = false }.buttonStyle(ActionStyle(filled: false))
             }
             .presentationDetents([.medium])
         }
+        .onChange(of: onlineContext) { _, _ in clearOnlineReply() }
+    }
+
+    private func askOnlineCoach() {
+        guard let context = onlineContext, !awaitingCoach else { return }
+        clearOnlineReply()
+        awaitingCoach = true
+        request = Task {
+            guard !Task.isCancelled, onlineContext == context else { return }
+            let reply = await connection.coachCheckIn(context, consented: store.preferences.onlineCoachConsented)
+            guard !Task.isCancelled, onlineContext == context, showCall else { return }
+            modelReply = reply
+            usedLocalReply = reply == nil
+            awaitingCoach = false
+            request = nil
+        }
+    }
+
+    private func clearOnlineReply() {
+        request?.cancel()
+        if modelReply != nil { speaker.stopSpeaking(at: .immediate) }
+        request = nil
+        awaitingCoach = false
+        modelReply = nil
+        usedLocalReply = false
     }
 }
 
