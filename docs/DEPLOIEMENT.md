@@ -8,7 +8,7 @@
 | Supabase | Projet KAARIS actif en région Paris `eu-west-3`. Migration `20261119080059_kaaris_initial_schema` appliquée et relue. Les six tables existent, toutes avec RLS. |
 | Serveur API | Programme Node 24, sans dépendance npm. Tests locaux des échanges HTTP, OAuth, créneaux concurrents et choix des relances. Les fournisseurs sont simulés dans ces tests. |
 | Google Agenda | Parcours OAuth et appels REST implémentés. Le client OAuth Google et un callback HTTPS sont requis pour une recette avec un agenda réel. |
-| Inférence | Configuration Gemma 4 12B IT QAT Q4_0 et llama.cpp prête. Mesure de latence et de RAM requise sur le VPS choisi. |
+| Inférence | Profil llama.cpp pour Gemma 4 E4B IT QAT Q4_0, dimensionné pour un VPS de 8 Go. Démarrage et performances à mesurer sur le serveur. |
 
 Les quatre tables produit sont accessibles uniquement au compte authentifié propriétaire. Les deux tables OAuth sont réservées au rôle serveur. Le contrôle Supabase a relevé deux notices d’absence de politique sur ces tables réservées. Il a aussi signalé la fonction système préexistante `rls_auto_enable()`. Sa signature est `event_trigger` et son déclencheur est présent.
 
@@ -18,16 +18,16 @@ Ne pas mettre de clé privilégiée, de mot de passe de base de données, de coo
 
 Réutiliser le projet Supabase existant. Le tarif de calcul affiché pour une instance Micro supplémentaire dans une organisation Pro est de 10 USD par mois, avec 10 USD de crédit de calcul mensuel au niveau de l’organisation. Consulter la facture et la taille du projet pour connaître le coût supplémentaire effectif. [Tarifs Supabase](https://supabase.com/pricing).
 
-Choix initial OVHcloud VPS-3 2027 en France ou en Europe, Linux x86-64, 6 vCPU, 12 Go de RAM et 100 Go NVMe. Le catalogue API France affichait 12,24 € HT soit 14,69 € TTC par mois dans le mode mensuel, sans frais d’installation. Le tarif de 12,48 € TTC par mois affiché sur le site correspond à un prépaiement de 12 mois, soit 149,76 € TTC. Le VPS-4 à 24 Go était affiché à 28,19 € TTC par mois en mode mensuel. Le panier préparé par API pour Roubaix et Ubuntu 24.04 indiquait 14,69 € TTC, sauvegarde Standard incluse. La validation exige une session OVH authentifiée. Le configurateur web n’affichait aucun datacenter disponible. [Catalogue OVHcloud France](https://eu.api.ovh.com/v1/order/catalog/public/vps?ovhSubsidiary=FR) · [Gamme VPS](https://www.ovhcloud.com/fr/vps/).
+Le profil de déploiement cible un VPS OVHcloud Linux x86-64 doté de 4 vCPU, 8 Go de RAM et 75 Go de stockage. Les recettes ci-dessous s’appliquent à une version maintenue d’Ubuntu ou de Debian. [Gamme VPS OVHcloud](https://www.ovhcloud.com/fr/vps/) · [Docker sur Ubuntu](https://docs.docker.com/engine/install/ubuntu/) · [Docker sur Debian](https://docs.docker.com/engine/install/debian/).
 
-Gemma 4 12B tient dans un fichier de 6,98 Go. Le réglage initial utilise une requête à la fois et un contexte de 3 072 jetons. Le modèle Qwen3.8-27B quantifié Q4_K_M pèse 19,4 Go. Le cache et le système demandent aussi de la RAM. Le choix Gemma vise la bêta sur CPU et ne constitue pas une comparaison de qualité ou une mesure de débit. [Gemma 4](https://ai.google.dev/gemma/docs/core) · [Gemma 4 12B IT QAT](https://huggingface.co/google/gemma-4-12B-it-qat-q4_0-gguf) · [Qwen3.8-27B Q4_K_M](https://huggingface.co/ggml-org/Qwen3.8-27B-GGUF/blob/main/Qwen3.8-27B-Q4_K_M.gguf).
+Le fichier Gemma 4 E4B IT QAT Q4_0 officiel pèse 5,15 Go. Le profil impose 6 Gio et trois vCPU au conteneur, avec trois threads, une requête à la fois et un contexte de 1 536 jetons. La limite laisse environ 1,2 Gio au-dessus de la taille du fichier pour le cache et les buffers du modèle, ainsi qu’une marge sur le VPS pour Linux, Caddy et l’API. Vérifier la mémoire réelle au démarrage et en charge. Le projecteur multimodal est désactivé, car le coach traite du texte. [Gemma 4 E4B IT QAT](https://huggingface.co/google/gemma-4-E4B-it-qat-q4_0-gguf) · [Options du serveur llama.cpp](https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md).
 
 ## Configuration du serveur
 
-1. Préparer le VPS pour KAARIS, valider l’accès SSH par clé et déclarer le nom DNS dédié. Installer Docker Engine et le plugin Compose depuis les paquets officiels de la distribution. Les seuls ports du projet destinés au public sont 80 et 443. Préserver l’accès SSH d’administration.
+1. Préparer le VPS pour KAARIS et valider l’accès SSH par clé. Installer Docker Engine, Buildx et le plugin Compose depuis le dépôt APT officiel de la distribution. Vérifier `docker version` et `docker compose version`. L’image de l’API fournit Node 24. Pour HTTPS, renseigner un nom public dont les enregistrements DNS pointent vers le VPS, puis vérifier que Caddy peut écouter sur les ports 80 et 443. Préserver l’accès SSH d’administration. [HTTPS automatique de Caddy](https://caddyserver.com/docs/automatic-https).
 2. Déployer une copie de travail de la version validée. Dans `server/`, créer `.env` depuis `.env.example` avec des permissions `0600`. Le fichier est ignoré par Git. Garder la copie de récupération des secrets dans le coffre de l’utilisateur.
-3. Renseigner `KAARIS_HOST`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` et `SUPABASE_SECRET_KEY`. Cette dernière peut être une clé serveur `sb_secret_…` ou une clé héritée `service_role`. Vérifier que les clés correspondent au projet KAARIS. Conserver le réglage `PORT` par défaut dans Compose.
-4. Activer Calendar API dans un projet Google dédié. Créer un client OAuth de type application Web, renseigner les utilisateurs autorisés et déclarer l’URL exacte `https://<hôte>/v1/google/callback`. Configurer `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` et `GOOGLE_REDIRECT_URI`. Garder une clé aléatoire de 32 octets encodée en base64 dans `OAUTH_ENCRYPTION_KEY`. Changer cette clé sans migration oblige à reconnecter les comptes.
+3. Renseigner `KAARIS_HOST` avec le nom seul et `SUPABASE_URL` avec l’URL HTTPS du projet. Fournir `SUPABASE_PUBLISHABLE_KEY` et `SUPABASE_SECRET_KEY` depuis **Settings → API Keys** de ce projet. Le serveur accepte une clé `sb_secret_…` ou une clé héritée `service_role`. L’app attend une clé `sb_publishable_…`. Renseigner la clé serveur via un canal privé, dans un fichier `.env` restreint. Conserver le port par défaut. [Clés API Supabase](https://supabase.com/docs/guides/getting-started/api-keys).
+4. Laisser `GOOGLE_CLIENT_ID` vide pour démarrer l’API et le modèle sans Google Agenda. Pour activer Agenda, préparer un projet Google dédié et un client OAuth de type application Web. Déclarer les utilisateurs autorisés et l’URL exacte `https://<hôte>/v1/google/callback`. Renseigner `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` et une clé aléatoire de 32 octets encodée en base64 dans `OAUTH_ENCRYPTION_KEY`. Changer cette clé sans migration oblige les utilisateurs à reconnecter leur compte Google.
 5. Configurer côté iOS le nom HTTPS de l’API, le projet Auth Supabase et le schéma `kaaris://` utilisé par la session d’authentification système. L’enregistrement de l’URL de retour Google se fait avec l’URL HTTPS de l’API.
 6. Démarrer un seul processus API pour la bêta. Les verrous de confirmation et d’inférence sont locaux au processus. Le serveur garde une identité d’événement stable chez Google pour les reprises après incident.
 7. Déployer le profil Compose `model` après avoir vérifié le fichier du modèle. La génération du coach reçoit les variantes autorisées, le type de relance et les niveaux choisis. Elle ne reçoit ni agenda, ni poids, ni localisation.
@@ -36,33 +36,32 @@ Démarrer l’API avec Caddy, puis vérifier l’obtention du certificat et la r
 
 ```sh
 cd server
+docker compose --profile model config --quiet
 docker compose up -d --build
 docker compose ps
 curl -fsS https://kaaris-api.example.com/healthz
 ```
 
-Télécharger les poids officiels à la révision contrôlée. Cette commande se lance dans `server/` sur le VPS.
+Télécharger les poids depuis `server/` sur le VPS. Le script reprend le téléchargement dans un fichier temporaire, vérifie le SHA-256 à la révision officielle épinglée, puis rend le GGUF disponible à llama.cpp.
 
 ```sh
-mkdir -p models
-curl --fail --location --retry 2 \
-  -o models/gemma-4-12b-it-qat-q4_0.gguf \
-  https://huggingface.co/google/gemma-4-12B-it-qat-q4_0-gguf/resolve/29d097773436b69ff9feafd636ab4cf873786537/gemma-4-12b-it-qat-q4_0.gguf
-printf '%s  %s\n' \
-  93567e57a8fe10b23569b9d9ec38cd005deedf71e29477c421a4b83f418a538b \
-  models/gemma-4-12b-it-qat-q4_0.gguf | sha256sum -c -
+sh fetch-model.sh
 ```
 
-Renseigner `INFERENCE_ORIGIN=http://inference:8080` dans `.env` puis démarrer le profil.
+Renseigner `INFERENCE_ORIGIN=http://inference:8080` dans `.env`, puis démarrer le profil. Le serveur llama.cpp écoute uniquement sur le réseau interne de Compose.
 
 ```sh
 docker compose --profile model up -d --build
 docker compose --profile model ps
-docker compose --profile model exec -T api node -e 'fetch("http://inference:8080/health").then(async r => { console.log(r.status, await r.text()); process.exitCode = r.ok ? 0 : 1; })'
+docker compose --profile model exec -T api node -e 'fetch("http://inference:8080/health", { signal: AbortSignal.timeout(5000) }).then(async r => { console.log(r.status, await r.text()); process.exitCode = r.ok ? 0 : 1; })'
 docker stats --no-stream
 ```
 
-Vérifier les limites de RAM, le temps de cold start et la latence sur au moins dix appels consentis avec des valeurs fictives. Une réponse de source `model` confirme que le modèle a choisi une variante. Une réponse de source `template` maintient les relances si le modèle est occupé, hors délai ou invalide. Retirer `INFERENCE_ORIGIN` de la configuration et redémarrer le service API pour désactiver l’inférence.
+Attendre `200` sur `/health` côté modèle et noter le temps de démarrage ainsi que la RAM consommée. Tester ensuite dix requêtes authentifiées et séquentielles à `/v1/coach/message` avec un consentement actif et des niveaux fictifs non nuls. Relever les latences et la proportion de réponses `source: model`. L’API bascule sur un texte local après six secondes d’attente du modèle. Un résultat `source: template` est aussi possible quand le modèle est occupé ou renvoie un format inattendu.
+
+Si la mémoire manque ou que la latence fait basculer la majorité des requêtes, utiliser le modèle officiel E2B QAT Q4_0 de 3,35 Go. Exécuter `sh fetch-model.sh e2b`, renseigner `KAARIS_MODEL_FILE=gemma-4-E2B_q4_0-it.gguf` et relancer `docker compose --profile model up -d`. Refaire les mêmes mesures. [Gemma 4 E2B IT QAT](https://huggingface.co/google/gemma-4-E2B-it-qat-q4_0-gguf).
+
+Pour désactiver l’inférence, vider `INFERENCE_ORIGIN`, recréer l’API avec `docker compose up -d --force-recreate api`, puis arrêter le conteneur du modèle avec `docker compose --profile model stop inference`.
 
 ## Contrat API
 

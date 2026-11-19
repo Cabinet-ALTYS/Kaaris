@@ -36,8 +36,8 @@ services:
     image: ghcr.io/ggml-org/llama.cpp:server
     profiles: [model]
     restart: unless-stopped
-    mem_limit: 9g
-    cpus: 4
+    mem_limit: 6g
+    cpus: 3
     networks:
       - inference
     cap_drop: [ALL]
@@ -46,19 +46,24 @@ services:
       - ./models:/models:ro
     command:
       - --model
-      - /models/gemma-4-12b-it-qat-q4_0.gguf
+      - /models/${KAARIS_MODEL_FILE:-gemma-4-E4B_q4_0-it.gguf}
       - --host
       - "0.0.0.0"
       - --port
       - "8080"
       - --ctx-size
-      - "3072"
+      - "1536"
       - --parallel
       - "1"
       - --threads
-      - "4"
+      - "3"
+      - --batch-size
+      - "256"
+      - --ubatch-size
+      - "128"
       - --gpu-layers
       - "0"
+      - --no-mmproj
       - --no-webui
 
 networks:
