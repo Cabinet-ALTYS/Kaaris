@@ -4,7 +4,7 @@
 
 | Composant | État |
 |---|---|
-| GitHub | Dépôt créé par le porteur de projet. Vérifier sa visibilité avant toute publication de code. |
+| GitHub | Dépôt public [Cabinet-ALTYS/Kaaris](https://github.com/Cabinet-ALTYS/Kaaris). Les secrets restent dans les configurations locales ignorées. |
 | Supabase | Projet KAARIS actif en région Paris `eu-west-3`. Migration `20261119080059_kaaris_initial_schema` appliquée et relue. Les six tables existent, toutes avec RLS. |
 | Serveur API | Programme Node 24, sans dépendance npm. Tests locaux des échanges HTTP, OAuth, créneaux concurrents et choix des relances. Les fournisseurs sont simulés dans ces tests. |
 | Google Agenda | Parcours OAuth et appels REST implémentés. Le client OAuth Google et un callback HTTPS sont requis pour une recette avec un agenda réel. |
@@ -18,7 +18,7 @@ Ne pas mettre de clé privilégiée, de mot de passe de base de données, de coo
 
 Réutiliser le projet Supabase existant. Le tarif de calcul affiché pour une instance Micro supplémentaire dans une organisation Pro est de 10 USD par mois, avec 10 USD de crédit de calcul mensuel au niveau de l’organisation. Consulter la facture et la taille du projet pour connaître le coût supplémentaire effectif. [Tarifs Supabase](https://supabase.com/pricing).
 
-Choix initial OVHcloud VPS-3 2027 en France ou en Europe, Linux x86-64, 6 vCPU, 12 Go de RAM et 100 Go NVMe. Le catalogue API France affichait 12,24 € HT soit 14,69 € TTC par mois dans le mode mensuel, sans frais d’installation. Le tarif de 12,48 € TTC par mois affiché sur le site correspond à un prépaiement de 12 mois, soit 149,76 € TTC. Le VPS-4 à 24 Go était affiché à 28,19 € TTC par mois en mode mensuel. Confirmer le prix, la durée et les options dans le panier réel. [Catalogue OVHcloud France](https://eu.api.ovh.com/v1/order/catalog/public/vps?ovhSubsidiary=FR) · [Gamme VPS](https://www.ovhcloud.com/fr/vps/).
+Choix initial OVHcloud VPS-3 2027 en France ou en Europe, Linux x86-64, 6 vCPU, 12 Go de RAM et 100 Go NVMe. Le catalogue API France affichait 12,24 € HT soit 14,69 € TTC par mois dans le mode mensuel, sans frais d’installation. Le tarif de 12,48 € TTC par mois affiché sur le site correspond à un prépaiement de 12 mois, soit 149,76 € TTC. Le VPS-4 à 24 Go était affiché à 28,19 € TTC par mois en mode mensuel. Le panier préparé par API pour Roubaix et Ubuntu 24.04 indiquait 14,69 € TTC, sauvegarde Standard incluse. La validation exige une session OVH authentifiée. Le configurateur web n’affichait aucun datacenter disponible. [Catalogue OVHcloud France](https://eu.api.ovh.com/v1/order/catalog/public/vps?ovhSubsidiary=FR) · [Gamme VPS](https://www.ovhcloud.com/fr/vps/).
 
 Gemma 4 12B tient dans un fichier de 6,98 Go. Le réglage initial utilise une requête à la fois et un contexte de 3 072 jetons. Le modèle Qwen3.8-27B quantifié Q4_K_M pèse 19,4 Go. Le cache et le système demandent aussi de la RAM. Le choix Gemma vise la bêta sur CPU et ne constitue pas une comparaison de qualité ou une mesure de débit. [Gemma 4](https://ai.google.dev/gemma/docs/core) · [Gemma 4 12B IT QAT](https://huggingface.co/google/gemma-4-12B-it-qat-q4_0-gguf) · [Qwen3.8-27B Q4_K_M](https://huggingface.co/ggml-org/Qwen3.8-27B-GGUF/blob/main/Qwen3.8-27B-Q4_K_M.gguf).
 

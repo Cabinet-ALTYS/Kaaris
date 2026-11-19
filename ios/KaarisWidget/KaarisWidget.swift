@@ -7,7 +7,9 @@ private struct WorkoutSnapshot: Codable {
     let weeklyGoal: Int
 
     static func load() -> WorkoutSnapshot? {
-        guard let data = UserDefaults(suiteName: "group.com.kaariscoach.ios")?.data(forKey: "kaaris.widget.snapshot.v1") else { return nil }
+        let group = "group.com.kaariscoach.ios"
+        guard FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group) != nil,
+              let data = UserDefaults(suiteName: group)?.data(forKey: "kaaris.widget.snapshot.v1") else { return nil }
         return try? JSONDecoder().decode(WorkoutSnapshot.self, from: data)
     }
 }
@@ -138,7 +140,7 @@ struct KaarisWidget: Widget {
             WorkoutAccessory(entry: entry)
         }
         .configurationDisplayName("KAARIS")
-        .description("Retrouve ta prochaine séance et ton pointage depuis l’écran verrouillé.")
+        .description("Ouvre ton pointage depuis l’écran verrouillé.")
         .supportedFamilies([.accessoryInline, .accessoryCircular, .accessoryRectangular])
     }
 }

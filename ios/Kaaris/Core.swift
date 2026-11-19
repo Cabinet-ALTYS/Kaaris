@@ -257,6 +257,7 @@ final class CoachStore: ObservableObject {
     func refreshReminders() {
         guard !isDemo else { return }
         scheduler.replace(sessions: sessions, preferences: preferences)
+        publishWidget()
     }
 
     @discardableResult
@@ -278,6 +279,12 @@ final class CoachStore: ObservableObject {
         if let data = try? JSONEncoder().encode(snapshot) {
             defaults.set(data, forKey: Self.storageKey)
         }
+        publishWidget()
+    }
+
+    private func publishWidget() {
+        guard hasOnboarded else { return }
+        WidgetSnapshot.publish(sessions: sessions, goal: profile.sessionsPerWeek)
     }
 
     private struct Snapshot: Codable {
