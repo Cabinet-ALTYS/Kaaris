@@ -1,0 +1,14 @@
+.DS_Store
+*.xcuserstate
+xcuserdata/
+DerivedData/
+build/
+ios/Local.xcconfig
+.env
+.env.*
+!.env.example
+*.p8
+*.pem
+*.mobileprovision
+*.xcarchive/
+supabase/.temp/

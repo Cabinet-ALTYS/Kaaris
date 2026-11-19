@@ -1,0 +1,3 @@
+{$KAARIS_HOST} {
+    reverse_proxy api:8787
+}

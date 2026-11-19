@@ -1,0 +1,7 @@
+// Copie ce fichier dans Local.xcconfig pour un build connecté.
+// Laisse les valeurs vides pour une version locale.
+// Xcode traite // comme un commentaire. Utilise /$()/ dans les URLs HTTPS.
+// Exemple de format : https:/$()/kaaris.example.com
+KAARIS_API_URL =
+SUPABASE_URL =
+SUPABASE_PUBLISHABLE_KEY =
