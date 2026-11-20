@@ -89,6 +89,8 @@ Le MCP Google Calendar officiel est en Developer Preview. Son activation demande
 
 ## Voix du coach
 
+Depuis le build 4, les répliques fixes de l’appel simulé et du pointage utilisent Bellami en local. Les douze extraits Eleven v4 livrés dans l’app correspondent aux quatre phases et aux trois tons configurés dans `server/src/voice.mjs`. Le ton neutre s’applique sans consentement au langage cru. L’appel de test utilise le ton réglé sur l’appareil et reste local.
+
 Pour la synthèse vocale distante, renseigner dans le fichier serveur `.env` restreint `ELEVENLABS_API_KEY` et `ELEVENLABS_VOICE_ID`. Choisir une voix française originale ou une voix de catalogue dont les droits couvrent l’usage de l’app. Réserver la clé au serveur et au périmètre Text to Speech. La valeur par défaut de `ELEVENLABS_MODEL_ID` est `eleven_v4`. `eleven_v3` peut être sélectionné explicitement après une écoute comparative. Recréer le service avec `docker compose up -d --force-recreate api` après modification. [Voix et débit de synthèse](https://elevenlabs.io/docs/eleven-creative/playground/text-to-speech) · [Create speech](https://elevenlabs.io/docs/api-reference/text-to-speech/convert).
 
 Les paramètres de phase et de ton choisissent l’une des douze phrases françaises prévues par l’app. Les tons directs et intenses requièrent `bluntToneConsented=true`, sinon la phrase neutre est employée. ElevenLabs reçoit uniquement la phrase fixe avec sa balise d’interprétation. Les données du compte, les réponses de l’utilisateur et les informations de ses séances restent dans KAARIS. [Balises audio d’Eleven v4](https://elevenlabs.io/docs/help-center/product/core-capabilities/text-to-speech/how-do-audio-tags-work-with-eleven-v3-and-v4).

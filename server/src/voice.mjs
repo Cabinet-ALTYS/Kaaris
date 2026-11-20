@@ -2,24 +2,24 @@ import { ApiError } from "./http.mjs";
 
 const phrases = {
   greeting: {
-    neutral: "[calm] Salut. On fait le point sur ta journée. Tu es prêt ?",
-    direct: "[curious] Allez, on fait le point. Qu’est-ce que t’as fait aujourd’hui ?",
-    intense: "[firm] On fait le bilan. Tu t’es fixé un objectif. Raconte-moi comment t’as bougé aujourd’hui."
+    neutral: "[in a low, calm conversational voice] Salut. On fait le point. Tu as pu faire ta séance aujourd’hui ?",
+    direct: "[in a low, firm conversational voice] Allez, on fait le point. Ta séance, tu l’as faite ?",
+    intense: "[low and stern, with controlled anger] T’avais dit que t’irais à la salle. [short pause] Alors bouge, bordel. T’y es, t’as fini ou t’as encore repoussé ?"
   },
   workout: {
     neutral: "[curious] Tu as pu faire ta séance ? Si tu l’as reportée, tu peux choisir un nouveau créneau.",
-    direct: "[firm] T’es allé à la salle ? Si t’as décalé, dis-le. On recale la séance.",
-    intense: "[firm] T’avais bloqué ce créneau. T’as fait ta séance ou tu la recales ? Donne-moi une réponse claire."
+    direct: "[in a low, firm conversational voice] T’es allé à la salle ? Dis-moi où t’en es.",
+    intense: "[low and stern, with sharp emphasis] Putain, t’avais bloqué ce créneau. T’y es, t’as fini, ou tu repousses ?"
   },
   nutrition: {
     neutral: "[curious] Qu’est-ce que tu as mangé aujourd’hui ? Tu peux me résumer tes repas.",
-    direct: "[curious] Qu’est-ce que t’as mangé aujourd’hui ? Fais-moi le point, repas par repas.",
-    intense: "[firm] Fais le point sur tes repas. Dis-moi ce que t’as mangé et ce que tu veux préparer pour demain."
+    direct: "[firm] Allez, raconte. Qu’est-ce que t’as mangé aujourd’hui ?",
+    intense: "[low and impatient] Allez, accouche. Qu’est-ce que t’as bouffé aujourd’hui ?"
   },
   closing: {
-    neutral: "[calm] Merci pour ton bilan. Choisis la prochaine action que tu veux tenir.",
-    direct: "[firm] Bilan fait. Choisis ton prochain créneau et prépare la suite.",
-    intense: "[firm] C’est noté. Maintenant choisis ton prochain créneau. Ton engagement, c’est à toi de le tenir."
+    neutral: "[calm] Merci pour ton bilan. On se retrouve au prochain pointage.",
+    direct: "[firm] C’est noté. Prépare la prochaine séance.",
+    intense: "[low and stern, with sharp emphasis] Bilan fait. Maintenant, tiens ta parole. Au prochain pointage, je veux du concret."
   }
 };
 

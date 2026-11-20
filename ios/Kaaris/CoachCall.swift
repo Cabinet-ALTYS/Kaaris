@@ -33,7 +33,7 @@ struct CoachCallSheet: View {
     private var closingLine: String { "On se retrouve au prochain pointage." }
 
     private var remoteVoiceEnabled: Bool {
-        !store.isDemo && connection.voiceConfigured && connection.isSignedIn && store.preferences.elevenLabsVoiceConsent == true
+        !invitation.isTest && !store.isDemo && connection.voiceConfigured && connection.isSignedIn && store.preferences.elevenLabsVoiceConsent == true
     }
 
     var body: some View {
@@ -52,6 +52,9 @@ struct CoachCallSheet: View {
         .onDisappear(perform: stopAudio)
         .onChange(of: remoteVoiceEnabled) { _, enabled in
             if !enabled { stopAudio() }
+        }
+        .onChange(of: store.preferences.bluntConsent) { _, consented in
+            if !consented { stopAudio() }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase != .active { stopAudio() }
@@ -72,7 +75,7 @@ struct CoachCallSheet: View {
             }
             Button("Répondre") {
                 step = .workout
-                play(.greeting, fallback: "\(store.preferences.coachMessage(variant: 1)) \(workoutQuestion)")
+                play(.greeting, fallback: "On fait le point. \(workoutQuestion)")
             }
             .buttonStyle(ActionStyle())
             Button("Refuser") { dismiss() }
@@ -156,26 +159,30 @@ struct CoachCallSheet: View {
     private func play(_ phase: CoachVoicePhase, fallback: String) {
         stopAudio()
         guard scenePhase == .active else { return }
+        let preferences = store.preferences
         guard remoteVoiceEnabled else {
-            speakLocally(fallback)
+            playBundled(phase, preferences: preferences, fallback: fallback)
             return
         }
 
-        let preferences = store.preferences
         voiceRequest = Task {
             let data = await connection.voiceCheckIn(phase: phase, preferences: preferences)
             guard !Task.isCancelled, remoteVoiceEnabled, scenePhase == .active else { return }
             if let data, let audio = try? AVAudioPlayer(data: data), audio.play() {
                 player = audio
             } else {
-                speakLocally(fallback)
+                playBundled(phase, preferences: preferences, fallback: fallback)
             }
             voiceRequest = nil
         }
     }
 
-    private func speakLocally(_ text: String) {
-        let utterance = AVSpeechUtterance(string: text)
+    private func playBundled(_ phase: CoachVoicePhase, preferences: CoachPreferences, fallback: String) {
+        if let audio = BellamiVoice.makePlayer(for: phase, preferences: preferences), audio.play() {
+            player = audio
+            return
+        }
+        let utterance = AVSpeechUtterance(string: fallback)
         utterance.voice = AVSpeechSynthesisVoice(language: "fr-FR")
         utterance.rate = 0.47
         speaker.speak(utterance)

@@ -8,7 +8,7 @@ Ouvrir `ios/Kaaris.xcodeproj`, choisir le schéma **Kaaris** et lancer sur un si
 
 - Plan par objectif, niveau, matériel et durée. Les 35 fiches d’exercice incluent une animation, les consignes de mouvement et de respiration et des pistes de progression.
 - Rappels locaux iOS, notification de test, pause et heures silencieuses. Le langage, la fréquence des relances et la pression sur l’ego se règlent séparément. Un consentement distinct active le ton cru dans les notifications.
-- Pointage manuel ou vérification ponctuelle de proximité d’une salle enregistrée sur l’iPhone. Une relance peut ouvrir un appel simulé dans l’app avec une voix synthétique française et des réponses à toucher.
+- Pointage manuel ou vérification ponctuelle de proximité d’une salle enregistrée sur l’iPhone. Une relance peut ouvrir un appel simulé dans l’app avec la voix française Bellami et des réponses à toucher. Les répliques fixes produites par Eleven v4 fonctionnent hors ligne.
 - Les mesures et habitudes sont optionnelles et stockées sur l’iPhone. Le temps d’écran se déclare manuellement.
 
 ## État des intégrations

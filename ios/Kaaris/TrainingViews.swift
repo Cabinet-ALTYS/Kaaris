@@ -265,16 +265,18 @@ struct WorkoutDetail: View {
 }
 
 struct CoachScreen: View {
+    @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var store: CoachStore
     @EnvironmentObject private var connection: KaarisConnection
     @State private var speaker = AVSpeechSynthesizer()
+    @State private var player: AVAudioPlayer?
     @State private var showCall = false
     @State private var request: Task<Void, Never>?
     @State private var awaitingCoach = false
     @State private var modelReply: String?
     @State private var usedLocalReply = false
 
-    private let localQuestion = "Es-tu allé à ta séance ? Qu’est-ce qui t’aiderait pour la prochaine ?"
+    private let localQuestion = "Où en es-tu avec ta séance ?"
 
     private var onlineContext: CoachOnlineCheckIn? {
         guard !store.isDemo, connection.coachConfigured, connection.isSignedIn,
@@ -321,10 +323,7 @@ struct CoachScreen: View {
             }
             .buttonStyle(ActionStyle(filled: false))
         }
-        .sheet(isPresented: $showCall, onDismiss: {
-            clearOnlineReply()
-            speaker.stopSpeaking(at: .immediate)
-        }) {
+        .sheet(isPresented: $showCall, onDismiss: clearOnlineReply) {
             KPage {
                 SectionLabel(text: "CHECK-IN VOCAL KAARIS")
                 KTitle(text: "TU EN ES OÙ ?")
@@ -339,12 +338,7 @@ struct CoachScreen: View {
                 }
                 Text(modelReply ?? localQuestion)
                     .font(.title3.weight(.semibold))
-                Button {
-                    let message = AVSpeechUtterance(string: "On fait le point. \(modelReply ?? localQuestion)")
-                    message.voice = AVSpeechSynthesisVoice(language: "fr-FR")
-                    message.rate = 0.47
-                    speaker.speak(message)
-                } label: {
+                Button(action: playCheckIn) {
                     Label("Écouter le coach", systemImage: "speaker.wave.2")
                 }.buttonStyle(ActionStyle())
                 if onlineContext != nil {
@@ -365,6 +359,33 @@ struct CoachScreen: View {
             .presentationDetents([.medium])
         }
         .onChange(of: onlineContext) { _, _ in clearOnlineReply() }
+        .onChange(of: store.preferences.bluntConsent) { _, consented in
+            if !consented { stopAudio() }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase != .active { stopAudio() }
+        }
+        .onDisappear(perform: clearOnlineReply)
+    }
+
+    private func playCheckIn() {
+        stopAudio()
+        guard scenePhase == .active else { return }
+        if modelReply == nil,
+           let audio = BellamiVoice.makePlayer(for: .workout, preferences: store.preferences), audio.play() {
+            player = audio
+            return
+        }
+        let message = AVSpeechUtterance(string: "On fait le point. \(modelReply ?? localQuestion)")
+        message.voice = AVSpeechSynthesisVoice(language: "fr-FR")
+        message.rate = 0.47
+        speaker.speak(message)
+    }
+
+    private func stopAudio() {
+        player?.stop()
+        player = nil
+        speaker.stopSpeaking(at: .immediate)
     }
 
     private func askOnlineCoach() {
@@ -375,6 +396,7 @@ struct CoachScreen: View {
             guard !Task.isCancelled, onlineContext == context else { return }
             let reply = await connection.coachCheckIn(context, consented: store.preferences.onlineCoachConsented)
             guard !Task.isCancelled, onlineContext == context, showCall else { return }
+            stopAudio()
             modelReply = reply
             usedLocalReply = reply == nil
             awaitingCoach = false
@@ -384,7 +406,7 @@ struct CoachScreen: View {
 
     private func clearOnlineReply() {
         request?.cancel()
-        if modelReply != nil { speaker.stopSpeaking(at: .immediate) }
+        stopAudio()
         request = nil
         awaitingCoach = false
         modelReply = nil
