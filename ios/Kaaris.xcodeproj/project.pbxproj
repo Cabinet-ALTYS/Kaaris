@@ -1,358 +1,216 @@
 // !$*UTF8*$!
 {
-	archiveVersion = 1;
-	classes = {
-	};
-	objectVersion = 71;
-	objects = {
-
-/* Begin PBXBuildFile section */
-		A0000000000000000000002C /* KaarisWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A00000000000000000000023 /* KaarisWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-/* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		A0000000000000000000002E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A00000000000000000000001 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A00000000000000000000021;
-			remoteInfo = KaarisWidget;
-		};
-/* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		A0000000000000000000002B /* Embed App Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				A0000000000000000000002C /* KaarisWidget.appex in Embed App Extensions */,
-			);
-			name = "Embed App Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
-/* Begin PBXFileReference section */
-		A00000000000000000000006 /* Kaaris.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = Kaaris.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A0000000000000000000000F /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
-		A00000000000000000000023 /* KaarisWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = KaarisWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-/* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		A00000000000000000000007 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = A00000000000000000000004 /* Kaaris */;
-		};
-		A00000000000000000000024 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = A00000000000000000000021 /* KaarisWidget */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		A00000000000000000000005 /* Kaaris */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (A00000000000000000000007 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Kaaris; sourceTree = "<group>"; };
-		A00000000000000000000022 /* KaarisWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (A00000000000000000000024 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = KaarisWidget; sourceTree = "<group>"; };
-/* End PBXFileSystemSynchronizedRootGroup section */
-
-/* Begin PBXFrameworksBuildPhase section */
-		A00000000000000000000012 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A00000000000000000000029 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXFrameworksBuildPhase section */
-
-/* Begin PBXGroup section */
-		A00000000000000000000002 = {
-			isa = PBXGroup;
-			children = (
-				A00000000000000000000005 /* Kaaris */,
-				A00000000000000000000022 /* KaarisWidget */,
-				A0000000000000000000000F /* Config.xcconfig */,
-				A00000000000000000000003 /* Products */,
-			);
-			sourceTree = "<group>";
-		};
-		A00000000000000000000003 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				A00000000000000000000006 /* Kaaris.app */,
-				A00000000000000000000023 /* KaarisWidget.appex */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-/* End PBXGroup section */
-
-/* Begin PBXNativeTarget section */
-		A00000000000000000000004 /* Kaaris */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A0000000000000000000000A /* Build configuration list for PBXNativeTarget "Kaaris" */;
-			buildPhases = (
-				A00000000000000000000011 /* Sources */,
-				A00000000000000000000012 /* Frameworks */,
-				A00000000000000000000013 /* Resources */,
-				A0000000000000000000002B /* Embed App Extensions */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				A0000000000000000000002D /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				A00000000000000000000005 /* Kaaris */,
-			);
-			name = Kaaris;
-			productName = Kaaris;
-			productReference = A00000000000000000000006 /* Kaaris.app */;
-			productType = "com.apple.product-type.application";
-		};
-		A00000000000000000000021 /* KaarisWidget */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A00000000000000000000025 /* Build configuration list for PBXNativeTarget "KaarisWidget" */;
-			buildPhases = (
-				A00000000000000000000028 /* Sources */,
-				A00000000000000000000029 /* Frameworks */,
-				A0000000000000000000002A /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				A00000000000000000000022 /* KaarisWidget */,
-			);
-			name = KaarisWidget;
-			productName = KaarisWidget;
-			productReference = A00000000000000000000023 /* KaarisWidget.appex */;
-			productType = "com.apple.product-type.app-extension";
-		};
-/* End PBXNativeTarget section */
-
-/* Begin PBXProject section */
-		A00000000000000000000001 /* Project object */ = {
-			isa = PBXProject;
-			attributes = {
-				LastSwiftUpdateCheck = 2630;
-				LastUpgradeCheck = 2630;
-			};
-			buildConfigurationList = A00000000000000000000009 /* Build configuration list for PBXProject "Kaaris" */;
-			compatibilityVersion = "Xcode 16.0";
-			developmentRegion = fr;
-			hasScannedForEncodings = 0;
-			knownRegions = (
-				fr,
-				Base,
-			);
-			mainGroup = A00000000000000000000002;
-			productRefGroup = A00000000000000000000003 /* Products */;
-			projectDirPath = "";
-			projectRoot = "";
-			targets = (
-				A00000000000000000000004 /* Kaaris */,
-				A00000000000000000000021 /* KaarisWidget */,
-			);
-		};
-/* End PBXProject section */
-
-/* Begin PBXResourcesBuildPhase section */
-		A00000000000000000000013 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A0000000000000000000002A /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
-
-/* Begin PBXSourcesBuildPhase section */
-		A00000000000000000000011 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A00000000000000000000028 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		A0000000000000000000002D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A00000000000000000000021 /* KaarisWidget */;
-			targetProxy = A0000000000000000000002E /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
-/* Begin XCBuildConfiguration section */
-		A0000000000000000000000B /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				ENABLE_TESTABILITY = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				SDKROOT = iphoneos;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		A0000000000000000000000C /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				SDKROOT = iphoneos;
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
-		A0000000000000000000000D /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = A0000000000000000000000F /* Config.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = "$(KAARIS_APP_ENTITLEMENTS)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Kaaris/Info.plist;
-				MARKETING_VERSION = 0.2.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.kaariscoach.ios;
-				PRODUCT_NAME = Kaaris;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Debug;
-		};
-		A0000000000000000000000E /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = A0000000000000000000000F /* Config.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = "$(KAARIS_APP_ENTITLEMENTS)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Kaaris/Info.plist;
-				MARKETING_VERSION = 0.2.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.kaariscoach.ios;
-				PRODUCT_NAME = Kaaris;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Release;
-		};
-		A00000000000000000000026 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = A0000000000000000000000F /* Config.xcconfig */;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGN_ENTITLEMENTS = "$(KAARIS_WIDGET_ENTITLEMENTS)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = KaarisWidget/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 0.2.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.kaariscoach.ios.widget;
-				PRODUCT_NAME = KaarisWidget;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Debug;
-		};
-		A00000000000000000000027 /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = A0000000000000000000000F /* Config.xcconfig */;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGN_ENTITLEMENTS = "$(KAARIS_WIDGET_ENTITLEMENTS)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = KaarisWidget/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 0.2.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.kaariscoach.ios.widget;
-				PRODUCT_NAME = KaarisWidget;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Release;
-		};
-/* End XCBuildConfiguration section */
-
-/* Begin XCConfigurationList section */
-		A00000000000000000000009 /* Build configuration list for PBXProject "Kaaris" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A0000000000000000000000B /* Debug */,
-				A0000000000000000000000C /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		A0000000000000000000000A /* Build configuration list for PBXNativeTarget "Kaaris" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A0000000000000000000000D /* Debug */,
-				A0000000000000000000000E /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		A00000000000000000000025 /* Build configuration list for PBXNativeTarget "KaarisWidget" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A00000000000000000000026 /* Debug */,
-				A00000000000000000000027 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-/* End XCConfigurationList section */
-	};
-	rootObject = A00000000000000000000001 /* Project object */;
+    archiveVersion = 1;
+    classes = {};
+    objectVersion = 77;
+    objects = {
+        A00000000000000000000001 = {
+            isa = PBXProject;
+            attributes = { LastSwiftUpdateCheck = 2630; LastUpgradeCheck = 2630; };
+            buildConfigurationList = A00000000000000000000009;
+            compatibilityVersion = "Xcode 16.0";
+            developmentRegion = fr;
+            hasScannedForEncodings = 0;
+            knownRegions = (fr, Base);
+            mainGroup = A00000000000000000000002;
+            productRefGroup = A00000000000000000000003;
+            projectDirPath = "";
+            projectRoot = "";
+            targets = (A00000000000000000000004, A00000000000000000000021);
+        };
+        A00000000000000000000002 = {
+            isa = PBXGroup;
+            children = (A00000000000000000000005, A00000000000000000000022, A0000000000000000000000F, A00000000000000000000003);
+            sourceTree = "<group>";
+        };
+        A00000000000000000000003 = {
+            isa = PBXGroup; children = (A00000000000000000000006, A00000000000000000000023); name = Products; sourceTree = "<group>";
+        };
+        A00000000000000000000004 = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = A0000000000000000000000A;
+            buildPhases = (A00000000000000000000011, A00000000000000000000012, A00000000000000000000013, A0000000000000000000002B);
+            buildRules = ();
+            dependencies = (A0000000000000000000002D);
+            fileSystemSynchronizedGroups = (A00000000000000000000005);
+            name = Kaaris;
+            productName = Kaaris;
+            productReference = A00000000000000000000006;
+            productType = "com.apple.product-type.application";
+        };
+        A00000000000000000000005 = {
+            isa = PBXFileSystemSynchronizedRootGroup;
+            exceptions = (A00000000000000000000007);
+            path = Kaaris;
+            sourceTree = "<group>";
+        };
+        A00000000000000000000006 = {
+            isa = PBXFileReference; explicitFileType = wrapper.application; path = Kaaris.app; sourceTree = BUILT_PRODUCTS_DIR;
+        };
+        A00000000000000000000007 = {
+            isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+            membershipExceptions = (Info.plist, Kaaris.entitlements);
+            target = A00000000000000000000004;
+        };
+        A00000000000000000000009 = {
+            isa = XCConfigurationList; buildConfigurations = (A0000000000000000000000B, A0000000000000000000000C);
+            defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;
+        };
+        A0000000000000000000000A = {
+            isa = XCConfigurationList; buildConfigurations = (A0000000000000000000000D, A0000000000000000000000E);
+            defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;
+        };
+        A0000000000000000000000B = {
+            isa = XCBuildConfiguration;
+            buildSettings = { ALWAYS_SEARCH_USER_PATHS = NO; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SDKROOT = iphoneos; SWIFT_VERSION = 5.0; ENABLE_TESTABILITY = YES; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; };
+            name = Debug;
+        };
+        A0000000000000000000000C = {
+            isa = XCBuildConfiguration;
+            buildSettings = { ALWAYS_SEARCH_USER_PATHS = NO; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SDKROOT = iphoneos; SWIFT_VERSION = 5.0; SWIFT_COMPILATION_MODE = wholemodule; };
+            name = Release;
+        };
+        A0000000000000000000000D = {
+            isa = XCBuildConfiguration;
+            baseConfigurationReference = A0000000000000000000000F;
+            buildSettings = {
+                ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+                CODE_SIGN_ENTITLEMENTS = "$(KAARIS_APP_ENTITLEMENTS)";
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 4;
+                GENERATE_INFOPLIST_FILE = NO;
+                INFOPLIST_FILE = Kaaris/Info.plist;
+                MARKETING_VERSION = 0.2.0;
+                PRODUCT_BUNDLE_IDENTIFIER = com.kaariscoach.ios;
+                PRODUCT_NAME = Kaaris;
+                SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+                TARGETED_DEVICE_FAMILY = 1;
+            };
+            name = Debug;
+        };
+        A0000000000000000000000E = {
+            isa = XCBuildConfiguration;
+            baseConfigurationReference = A0000000000000000000000F;
+            buildSettings = {
+                ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+                CODE_SIGN_ENTITLEMENTS = "$(KAARIS_APP_ENTITLEMENTS)";
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 4;
+                GENERATE_INFOPLIST_FILE = NO;
+                INFOPLIST_FILE = Kaaris/Info.plist;
+                MARKETING_VERSION = 0.2.0;
+                PRODUCT_BUNDLE_IDENTIFIER = com.kaariscoach.ios;
+                PRODUCT_NAME = Kaaris;
+                SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+                TARGETED_DEVICE_FAMILY = 1;
+            };
+            name = Release;
+        };
+        A0000000000000000000000F = {
+            isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>";
+        };
+        A00000000000000000000011 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+        A00000000000000000000012 = { isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+        A00000000000000000000013 = { isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+        A00000000000000000000021 = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = A00000000000000000000025;
+            buildPhases = (A00000000000000000000028, A00000000000000000000029, A0000000000000000000002A);
+            buildRules = ();
+            dependencies = ();
+            fileSystemSynchronizedGroups = (A00000000000000000000022);
+            name = KaarisWidget;
+            productName = KaarisWidget;
+            productReference = A00000000000000000000023;
+            productType = "com.apple.product-type.app-extension";
+        };
+        A00000000000000000000022 = {
+            isa = PBXFileSystemSynchronizedRootGroup;
+            exceptions = (A00000000000000000000024);
+            path = KaarisWidget;
+            sourceTree = "<group>";
+        };
+        A00000000000000000000023 = {
+            isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = KaarisWidget.appex; sourceTree = BUILT_PRODUCTS_DIR;
+        };
+        A00000000000000000000024 = {
+            isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+            membershipExceptions = (Info.plist, KaarisWidget.entitlements);
+            target = A00000000000000000000021;
+        };
+        A00000000000000000000025 = {
+            isa = XCConfigurationList; buildConfigurations = (A00000000000000000000026, A00000000000000000000027);
+            defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;
+        };
+        A00000000000000000000026 = {
+            isa = XCBuildConfiguration;
+            baseConfigurationReference = A0000000000000000000000F;
+            buildSettings = {
+                APPLICATION_EXTENSION_API_ONLY = YES;
+                CODE_SIGN_ENTITLEMENTS = "$(KAARIS_WIDGET_ENTITLEMENTS)";
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 4;
+                GENERATE_INFOPLIST_FILE = YES;
+                INFOPLIST_FILE = KaarisWidget/Info.plist;
+                LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks");
+                MARKETING_VERSION = 0.2.0;
+                PRODUCT_BUNDLE_IDENTIFIER = com.kaariscoach.ios.widget;
+                PRODUCT_NAME = KaarisWidget;
+                SKIP_INSTALL = YES;
+                SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+                TARGETED_DEVICE_FAMILY = 1;
+            };
+            name = Debug;
+        };
+        A00000000000000000000027 = {
+            isa = XCBuildConfiguration;
+            baseConfigurationReference = A0000000000000000000000F;
+            buildSettings = {
+                APPLICATION_EXTENSION_API_ONLY = YES;
+                CODE_SIGN_ENTITLEMENTS = "$(KAARIS_WIDGET_ENTITLEMENTS)";
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 4;
+                GENERATE_INFOPLIST_FILE = YES;
+                INFOPLIST_FILE = KaarisWidget/Info.plist;
+                LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks");
+                MARKETING_VERSION = 0.2.0;
+                PRODUCT_BUNDLE_IDENTIFIER = com.kaariscoach.ios.widget;
+                PRODUCT_NAME = KaarisWidget;
+                SKIP_INSTALL = YES;
+                SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+                TARGETED_DEVICE_FAMILY = 1;
+            };
+            name = Release;
+        };
+        A00000000000000000000028 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+        A00000000000000000000029 = { isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+        A0000000000000000000002A = { isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+        A0000000000000000000002B = {
+            isa = PBXCopyFilesBuildPhase;
+            buildActionMask = 2147483647;
+            dstPath = "";
+            dstSubfolderSpec = 13;
+            files = (A0000000000000000000002C);
+            name = "Embed App Extensions";
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+        A0000000000000000000002C = {
+            isa = PBXBuildFile;
+            fileRef = A00000000000000000000023;
+            settings = { ATTRIBUTES = (RemoveHeadersOnCopy); };
+        };
+        A0000000000000000000002D = {
+            isa = PBXTargetDependency;
+            target = A00000000000000000000021;
+            targetProxy = A0000000000000000000002E;
+        };
+        A0000000000000000000002E = {
+            isa = PBXContainerItemProxy;
+            containerPortal = A00000000000000000000001;
+            proxyType = 1;
+            remoteGlobalIDString = A00000000000000000000021;
+            remoteInfo = KaarisWidget;
+        };
+    };
+    rootObject = A00000000000000000000001;
 }
