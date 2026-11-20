@@ -5,6 +5,8 @@ struct OnboardingScreen: View {
     @EnvironmentObject private var store: CoachStore
     @State private var isAdult = false
     @State private var step = 0
+    @State private var wantsReminders = false
+    @State private var finishing = false
 
     var body: some View {
         KPage {
@@ -34,7 +36,22 @@ struct OnboardingScreen: View {
                 ProfileFields(profile: $store.profile)
                 Toggle("J’accepte un langage cru du coach", isOn: $store.preferences.bluntConsent)
                     .font(.subheadline.weight(.semibold))
-                Button("Créer mes séances") { store.finishOnboarding() }.buttonStyle(ActionStyle())
+                Toggle("Je veux recevoir les relances de mes séances", isOn: $wantsReminders)
+                    .font(.subheadline.weight(.semibold))
+                Button("Créer mes séances") {
+                    guard wantsReminders else {
+                        store.finishOnboarding()
+                        return
+                    }
+                    finishing = true
+                    Task {
+                        await store.requestNotifications()
+                        store.finishOnboarding()
+                        finishing = false
+                    }
+                }
+                .buttonStyle(ActionStyle())
+                .disabled(finishing)
                 Button("Retour") { step = 0 }.buttonStyle(ActionStyle(filled: false))
             }
         }
@@ -138,7 +155,8 @@ struct SettingsScreen: View {
     @EnvironmentObject private var store: CoachStore
     @EnvironmentObject private var connection: KaarisConnection
     @Environment(\.openURL) private var openURL
-    @State private var notifyDenied = false
+    @State private var checkingNotifications = false
+    @State private var notificationFeedback: String?
 
     var body: some View {
         KPage {
@@ -154,13 +172,19 @@ struct SettingsScreen: View {
             .kPanel()
 
             VStack(alignment: .leading, spacing: 16) {
-                slider("Langage", labels: ["Neutre", "Direct", "Familier", "Grossier"],
+                slider("Langage", labels: ["Neutre", "Direct", "Familier", "Grossier", "Très grossier"],
                        value: $store.preferences.languageIntensity, maxValue: store.preferences.maxLanguageIntensity)
                 Toggle("Autoriser le langage cru", isOn: $store.preferences.bluntConsent)
                     .font(.subheadline)
                 Divider()
-                slider("Relances par séance", labels: ["0 · Coupées", "1 · Avant", "2 · Avec pointage", "3 · Avec suivi"],
-                       value: $store.preferences.reminderIntensity)
+                slider("Relances par séance", labels: ["0 · Coupées", "1 · Avant", "2 · Pointage", "3 · Suivi", "4 · Préparation", "5 · Maximum"],
+                       value: $store.preferences.reminderIntensity, maxValue: ReminderPlan.maxDailyReminders)
+                Text("Jusqu’à cinq relances par jour, pendant les heures actives.")
+                    .font(.footnote).foregroundStyle(muted)
+                if store.preferences.reminderIntensity == ReminderPlan.maxDailyReminders {
+                    Text("Au niveau maximum, certains rappels ouvrent l’appel simulé si KAARIS est déjà à l’écran.")
+                        .font(.footnote).foregroundStyle(muted)
+                }
                 Divider()
                 slider("Pression sur l’ego", labels: ["Factuelle", "Objectif", "Défi", "Parole donnée"],
                        value: $store.preferences.egoPressure)
@@ -169,27 +193,75 @@ struct SettingsScreen: View {
 
             VStack(alignment: .leading, spacing: 12) {
                 SectionLabel(text: "NOTIFICATIONS")
+                Text(store.notificationDelivery.authorization.label)
+                    .font(.headline)
+                if store.isDemo {
+                    Text("Le mode démo n’envoie aucune notification.")
+                        .font(.footnote).foregroundStyle(muted)
+                }
+                if store.notificationDelivery.authorization.acceptsReminders {
+                    deliveryDetails
+                }
                 if store.preferences.remindersEnabled {
-                    Button("Désactiver les notifications") { store.preferences.remindersEnabled = false }
+                    Text(store.plannedReminderCount > 0
+                         ? "\(store.plannedReminderCount) relances à venir selon ton planning."
+                         : "Aucune relance à venir. Vérifie tes séances, ta pause et tes horaires de silence.")
+                        .font(.footnote).foregroundStyle(muted)
+                    Button("Désactiver les relances") { store.preferences.remindersEnabled = false }
                         .buttonStyle(ActionStyle(filled: false))
-                } else {
-                    Button("Activer les notifications") {
+                } else if store.notificationDelivery.authorization != .denied {
+                    Button("Activer les relances") {
+                        checkingNotifications = true
                         Task {
                             let enabled = await store.requestNotifications()
-                            store.preferences.remindersEnabled = enabled
-                            notifyDenied = !enabled
+                            notificationFeedback = enabled ? nil : "Les relances restent désactivées."
+                            checkingNotifications = false
                         }
                     }
                     .buttonStyle(ActionStyle(filled: false))
+                    .disabled(store.isDemo || checkingNotifications)
                 }
 
-                Button(pauseActive ? "Reprendre les relances" : "Mettre en pause 24 h") {
-                    store.preferences.pausedUntil = pauseActive ? nil : Date.now.addingTimeInterval(86400)
+                if store.notificationDelivery.authorization == .denied || store.notificationDelivery.authorization.acceptsReminders {
+                    Button("Ouvrir les réglages iOS") {
+                        if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+                    }
+                    .buttonStyle(ActionStyle(filled: false))
                 }
-                .buttonStyle(ActionStyle(filled: false))
+                if store.notificationDelivery.authorization.acceptsReminders || store.notificationDelivery.authorization == .notRequested {
+                    Button("Envoyer une notification de test") {
+                        checkingNotifications = true
+                        Task {
+                            let sent = await store.sendTestNotification()
+                            notificationFeedback = sent ? "Test programmé dans deux secondes. Touche-le pour essayer l’appel." : "iOS n’a pas accepté le test."
+                            checkingNotifications = false
+                        }
+                    }
+                    .buttonStyle(ActionStyle())
+                    .disabled(checkingNotifications)
+                }
+                if let notificationFeedback {
+                    Text(notificationFeedback).font(.footnote).foregroundStyle(muted)
+                }
 
-                hourPicker("Début du silence", value: $store.preferences.quietStartHour)
-                hourPicker("Fin du silence", value: $store.preferences.quietEndHour)
+                Toggle("Afficher le langage cru dans les notifications", isOn: Binding(
+                    get: { store.preferences.bluntConsent && store.preferences.bluntNotificationConsent == true },
+                    set: { store.preferences.bluntNotificationConsent = store.preferences.bluntConsent && $0 }
+                ))
+                .font(.subheadline)
+                .disabled(!store.preferences.bluntConsent || store.isDemo)
+                Text("Ce texte peut être visible sur ton écran verrouillé. Le ton sélectionné s’applique aux prochaines relances.")
+                    .font(.footnote).foregroundStyle(muted)
+
+                if !store.isDemo {
+                    Button(pauseActive ? "Reprendre les relances" : "Mettre en pause 24 h") {
+                        store.preferences.pausedUntil = pauseActive ? nil : Date.now.addingTimeInterval(86400)
+                    }
+                    .buttonStyle(ActionStyle(filled: false))
+
+                    hourPicker("Début du silence", value: $store.preferences.quietStartHour)
+                    hourPicker("Fin du silence", value: $store.preferences.quietEndHour)
+                }
             }
             .kPanel()
 
@@ -215,18 +287,57 @@ struct SettingsScreen: View {
                 .kPanel()
             }
 
+            if !store.isDemo && connection.voiceConfigured {
+                VStack(alignment: .leading, spacing: 8) {
+                    Toggle("Activer la voix ElevenLabs", isOn: Binding(
+                        get: { store.preferences.elevenLabsVoiceConsent == true },
+                        set: { store.preferences.elevenLabsVoiceConsent = $0 }
+                    ))
+                    .disabled(!connection.isSignedIn)
+                    Text("Quand tu réponds à l’appel du coach ou que tu l’écoutes, des phrases prédéfinies sont envoyées à ElevenLabs pour générer la voix. Tes réponses restent dans l’app.")
+                        .font(.footnote).foregroundStyle(muted)
+                    if !connection.isSignedIn {
+                        Text("Connecte-toi à ton compte KAARIS depuis Google Agenda.")
+                            .font(.footnote).foregroundStyle(muted)
+                    }
+                }
+                .kPanel()
+            }
+
             SectionLabel(text: "OBJECTIF ET PROFIL")
             ProfileFields(profile: $store.profile)
-        }
-        .alert("Notifications désactivées dans iOS", isPresented: $notifyDenied) {
-            Button("Ouvrir les réglages iOS") {
-                if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+
+            NavigationLink {
+                KPage {
+                    KTitle(text: "Confidentialité")
+                    Text("KAARIS garde sur cet appareil les informations de profil, le planning, les réponses de pointage et tes préférences.")
+                    Text("Les relances sont programmées par iOS. Lorsque tu enregistres une salle ou demandes à vérifier ta proximité, ta position sert à une vérification sur l’appareil.")
+                    Text("Tu peux gérer les autorisations et supprimer les données locales de cette installation depuis les réglages iOS.")
+                    Link("Lire la politique de confidentialité", destination: URL(string: "https://github.com/Cabinet-ALTYS/Kaaris/blob/main/docs/CONFIDENTIALITE.md")!)
+                        .buttonStyle(ActionStyle(filled: false))
+                }
+                .toolbar(.visible, for: .navigationBar)
+            } label: {
+                Label("Confidentialité", systemImage: "hand.raised")
             }
-            Button("Fermer", role: .cancel) {}
+            .buttonStyle(ActionStyle(filled: false))
         }
+        .task { await store.updateNotificationDelivery() }
     }
 
     private var pauseActive: Bool { (store.preferences.pausedUntil ?? .distantPast) > .now }
+
+    private var deliveryDetails: some View {
+        let delivery = store.notificationDelivery
+        let banners = delivery.banners ? "Bannières : oui" : "Bannières : non"
+        let lockScreen = delivery.lockScreen ? "Écran verrouillé : oui" : "Écran verrouillé : non"
+        let sound = delivery.sound ? "Son : oui" : "Son : non"
+        return VStack(alignment: .leading, spacing: 4) {
+            Text("\(banners) · \(lockScreen) · \(sound)")
+            if delivery.scheduledSummary { Text("Le résumé iOS peut différer l’affichage.") }
+        }
+        .font(.footnote).foregroundStyle(muted)
+    }
 
     private func slider(_ title: String, labels: [String], value: Binding<Int>, maxValue: Int = 3) -> some View {
         VStack(alignment: .leading, spacing: 6) {

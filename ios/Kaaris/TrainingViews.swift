@@ -170,18 +170,48 @@ struct WorkoutDetail: View {
 
                 VStack(alignment: .leading, spacing: 14) {
                     SectionLabel(text: "ÉCHAUFFEMENT")
-                    Text("Commence par quelques minutes de mouvement facile et une série légère du premier exercice.")
+                    Text(session.exercises.contains(where: { $0.restSeconds > 0 })
+                         ? "Fais quelques minutes de mouvement facile, puis une série légère du premier exercice."
+                         : "Commence à allure facile et augmente progressivement si tu es à l’aise.")
                         .font(.subheadline)
                     ForEach(session.exercises) { exercise in
                         Divider()
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text(exercise.name).font(.headline)
-                            Text("\(exercise.sets) séries · \(exercise.reps) · repos \(exercise.restSeconds) s")
-                                .font(.subheadline).foregroundStyle(muted)
+                        NavigationLink {
+                            ExerciseGuideScreen(exercise: exercise)
+                        } label: {
+                            HStack(spacing: 12) {
+                                VStack(alignment: .leading, spacing: 5) {
+                                    Text(exercise.name).font(.headline)
+                                    Text(exercise.summaryText)
+                                        .font(.subheadline).foregroundStyle(muted)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(acid)
+                                    .accessibilityHidden(true)
+                            }
+                            .frame(minHeight: 44)
+                            .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
+                        .accessibilityHint("Ouvre la démonstration et les conseils techniques")
                     }
                 }
                 .kPanel()
+
+                if session.exercises.contains(where: { $0.restSeconds > 0 }) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        SectionLabel(text: "EFFORT ET PROGRESSION")
+                        Text(store.profile.level == .beginner
+                             ? "Garde environ trois répétitions propres en réserve à la fin de chaque série."
+                             : "Garde environ deux répétitions propres en réserve à la fin de chaque série.")
+                        Text("Quand toutes tes séries atteignent le haut de la fourchette avec une bonne technique lors de deux séances, augmente légèrement la charge ou choisis une variante un peu plus difficile.")
+                            .foregroundStyle(muted)
+                    }
+                    .font(.subheadline)
+                    .kPanel()
+                }
 
                 if session.status == .planned {
                     Button("J’y suis") { store.updateStatus(.checkedIn, for: sessionID) }
@@ -363,16 +393,54 @@ struct CoachScreen: View {
 }
 
 struct FuelScreen: View {
+    @EnvironmentObject private var store: CoachStore
+
     var body: some View {
         KPage {
-            KTitle(text: "LES BASES.")
-            tip("Gagner du muscle", "Entraîne chaque groupe régulièrement. Note tes répétitions et augmente la charge progressivement quand le geste reste solide. Mange assez et varie les sources de protéines.", "https://acsm.org/resistance-training-guidelines-update-2026/")
-            tip("Perdre du poids", "Si la perte de poids correspond à ta situation, travaille sur des habitudes durables et garde des exercices de renforcement. Le suivi du poids est facultatif.", "https://www.nice.org.uk/guidance/ng246/chapter/Physical-activity-and-diet")
-            tip("Manger au quotidien", "Construis tes repas avec une variété d’aliments que tu aimes. Alterne légumes, fruits, féculents complets et sources de protéines. L’eau reste la boisson de référence.", "https://www.mangerbouger.fr/manger-mieux/a-tout-age-et-a-chaque-etape-de-la-vie/les-recommandations-alimentaires-pour-les-adultes")
+            KTitle(text: "SPORT ET NUTRITION")
+            goalTip
+            tip(
+                "Progresser en salle",
+                "Commence léger et garde deux ou trois répétitions possibles en fin de série. Quand tu atteins le haut de la fourchette deux fois avec le geste bien maîtrisé, essaie le plus petit palier de charge.",
+                "https://acsm.org/resistance-training-guidelines-update-2026/"
+            )
+            tip(
+                "Avant et après la séance",
+                "Prends de l’eau et, si tu as faim avant de partir, un aliment que tu digères bien. Après, reprends un repas habituel avec une source de protéines, des féculents selon ton appétit et des légumes.",
+                "https://pubmed.ncbi.nlm.nih.gov/26920240/"
+            )
+            tip(
+                "Quand la semaine est chargée",
+                "Prépare deux repas faciles à refaire. Par exemple, du riz avec tofu et légumes ou des œufs avec pain complet et salade. Pour la récupération, garde un jour libre ou choisis une marche facile.",
+                "https://www.mangerbouger.fr/manger-mieux/a-tout-age-et-a-chaque-etape-de-la-vie/les-recommandations-alimentaires-pour-les-adultes"
+            )
         }
         .navigationTitle("Repères")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
+    }
+
+    private var goalTip: some View {
+        switch store.profile.goal {
+        case .buildMuscle, .getStronger:
+            tip(
+                store.profile.goal.rawValue,
+                "Mange suffisamment pour soutenir l’entraînement. Choisis des sources de protéines que tu peux garder dans ta routine, comme les œufs, le yaourt, le poisson, le tofu ou les légumes secs.",
+                "https://pubmed.ncbi.nlm.nih.gov/28698222/"
+            )
+        case .loseWeight:
+            tip(
+                store.profile.goal.rawValue,
+                "Garde le renforcement et choisis une habitude que tu peux tenir. Tu peux préparer un repas pour les jours pressés ou remplacer une boisson sucrée par de l’eau. Observe aussi ton énergie et ta régularité.",
+                "https://www.nice.org.uk/guidance/ng246/chapter/Physical-activity-and-diet"
+            )
+        case .getFitter:
+            tip(
+                store.profile.goal.rawValue,
+                "Alterne le renforcement et les mouvements faciles comme la marche. Choisis une première habitude simple, par exemple prévoir une gourde ou ajouter un fruit à un repas.",
+                "https://www.who.int/europe/news-room/fact-sheets/item/physical-activity"
+            )
+        }
     }
 
     private func tip(_ title: String, _ content: String, _ source: String) -> some View {

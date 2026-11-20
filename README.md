@@ -6,9 +6,9 @@ Coach sportif gratuit pour iPhone, en français. Choisis un objectif et 2 à 6 s
 
 Ouvrir `ios/Kaaris.xcodeproj`, choisir le schéma **Kaaris** et lancer sur un simulateur iOS 17 ou ultérieur. Ajouter l’argument `--demo` au lancement pour afficher un programme fictif sans connecter de compte. En usage normal, renseigner l’onboarding pour créer son programme.
 
-- Plan par objectif, niveau, matériel et durée. Détail des exercices, report, présence et bilan hebdomadaire.
-- Rappels locaux iOS, pause et heures silencieuses. Trois niveaux réglables indépendamment pour le langage, les relances et la pression sur l’ego. L’aperçu du coach applique les réglages de ton et les notifications restent neutres.
-- Pointage manuel ou vérification ponctuelle de proximité d’une salle enregistrée sur l’iPhone. Check-in vocal ouvert depuis l’app, avec voix synthétique française.
+- Plan par objectif, niveau, matériel et durée. Les 35 fiches d’exercice incluent une animation, les consignes de mouvement et de respiration et des pistes de progression.
+- Rappels locaux iOS, notification de test, pause et heures silencieuses. Le langage, la fréquence des relances et la pression sur l’ego se règlent séparément. Un consentement distinct active le ton cru dans les notifications.
+- Pointage manuel ou vérification ponctuelle de proximité d’une salle enregistrée sur l’iPhone. Une relance peut ouvrir un appel simulé dans l’app avec une voix synthétique française et des réponses à toucher.
 - Les mesures et habitudes sont optionnelles et stockées sur l’iPhone. Le temps d’écran se déclare manuellement.
 
 ## État des intégrations
@@ -23,4 +23,5 @@ Le schéma Supabase est déployé. Les séances et le profil du prototype resten
 - [Identité, logo et avatar](brand/IDENTITE.md).
 - [Cahier des charges](docs/CAHIER_DES_CHARGES.md).
 - [Recherche sport et nutrition](docs/SPORT_NUTRITION.md).
+- [Politique de confidentialité](docs/CONFIDENTIALITE.md).
 - [Déploiement, variables et tests](docs/DEPLOIEMENT.md).

@@ -78,6 +78,8 @@ Toutes les routes privées attendent `Authorization: Bearer <access_token Supaba
 | `POST /v1/google/freebusy` | `{ calendarIds, timeMin, timeMax, timeZone }`. Retour `{ busy: [{ start, end }], unavailableCalendarIds }`. Jusqu’à dix calendriers et 31 jours. |
 | `POST /v1/google/sessions` | `{ sessions: [{ id, title, startsAt, endsAt }], calendarIds, timeZone? }`. Retour `{ sessions: [{ id, status, eventId?, code? }] }`. Jusqu’à 12 séances datées, chacune de 15 à 180 minutes. |
 | `POST /v1/coach/message` | `{ event, insultLevel, egoLevel, bluntToneConsented }`. Les niveaux sont des entiers de 0 à 4. Types `reminder`, `check_in`, `missed`, `done`. Retour `{ text, source }`. |
+| `GET /v1/voice/status` | `{ available }`. Indique la présence de la configuration serveur ElevenLabs. |
+| `POST /v1/voice/check-in` | `{ phase, tone, bluntToneConsented }`. Phases `greeting`, `workout`, `nutrition`, `closing`. Tons `neutral`, `direct` et `intense`. Retour MP3 `audio/mpeg`. |
 
 Les dates sont au format RFC 3339 avec décalage ou suffixe `Z`. Les fuseaux sont des identifiants IANA. Les statuts de confirmation sont `booked`, `conflict` et `error`. Seul `booked` confirme une écriture Google. Si la disponibilité d’un agenda ne peut pas être vérifiée, la réservation échoue pour la séance concernée. En cas de réseau interrompu, reprendre avec les mêmes identifiants de séances. Reconfirmer le créneau si ses horaires ont changé.
 
@@ -85,12 +87,23 @@ Google expose la disponibilité sans contenu d’événement. KAARIS utilise le 
 
 Le MCP Google Calendar officiel est en Developer Preview. Son activation demande un projet et un client OAuth déclarés pour un agent IA. Valider ces accès, les paramètres de l’outil et ses scopes avant d’intégrer son adaptateur. Le service actuel utilise Google Calendar REST avec OAuth par compte. [Documentation MCP Google Calendar](https://developers.google.com/workspace/calendar/api/guides/configure-mcp-server).
 
+## Voix du coach
+
+Pour la synthèse vocale distante, renseigner dans le fichier serveur `.env` restreint `ELEVENLABS_API_KEY` et `ELEVENLABS_VOICE_ID`. Choisir une voix française originale ou une voix de catalogue dont les droits couvrent l’usage de l’app. Réserver la clé au serveur et au périmètre Text to Speech. La valeur par défaut de `ELEVENLABS_MODEL_ID` est `eleven_v4`. `eleven_v3` peut être sélectionné explicitement après une écoute comparative. Recréer le service avec `docker compose up -d --force-recreate api` après modification. [Voix et débit de synthèse](https://elevenlabs.io/docs/eleven-creative/playground/text-to-speech) · [Create speech](https://elevenlabs.io/docs/api-reference/text-to-speech/convert).
+
+Les paramètres de phase et de ton choisissent l’une des douze phrases françaises prévues par l’app. Les tons directs et intenses requièrent `bluntToneConsented=true`, sinon la phrase neutre est employée. ElevenLabs reçoit uniquement la phrase fixe avec sa balise d’interprétation. Les données du compte, les réponses de l’utilisateur et les informations de ses séances restent dans KAARIS. [Balises audio d’Eleven v4](https://elevenlabs.io/docs/help-center/product/core-capabilities/text-to-speech/how-do-audio-tags-work-with-eleven-v3-and-v4).
+
+Les MP3 sont conservés en mémoire jusqu’au redémarrage du processus et mutualisés entre comptes. Le serveur accepte au plus 30 demandes par compte et par fenêtre de dix minutes, deux synthèses en cours et 18 tentatives fournisseur par jour UTC et par processus. Ces compteurs redémarrent avec l’API. Un plafond de crédits chez ElevenLabs complète ces limites. Le cache couvre 12 clips de 512 Kio maximum chacun. L’API peut répondre `503` si la voix distante est désactivée ou occupée, `502` en cas de panne fournisseur et `429` si un quota est atteint. L’app peut alors lire la phrase de secours sur l’iPhone.
+
+Eleven v4 règle l’expression du coach. Un futur échange vocal demanderait un parcours distinct pour recevoir et transcrire la voix de l’utilisateur. Scribe v3 Live fournit la transcription et certains signaux de tour de parole. Le mode expressif ElevenAgents adapte le tour de parole et la voix à des indices comme la prosodie et le contexte. Son analyse de sentiment s’appuie sur la transcription de conversations terminées. Un indice vocal ou textuel reste une estimation et ne permet pas d’établir l’émotion réelle d’une personne. La version actuelle fonctionne avec les réponses explicites dans l’interface. [Modèles Scribe](https://elevenlabs.io/docs/overview/models) · [Mode expressif ElevenAgents](https://elevenlabs.io/docs/eleven-agents/customization/voice/expressive-mode) · [Analyse de sentiment](https://elevenlabs.io/docs/eleven-agents/customization/agent-analysis/sentiment-analysis).
+
 ## Recette de bêta
 
 - Lancer `npm --prefix server test` à la racine et inspecter `/healthz` sur le VPS.
 - Installer la version de test iOS et se connecter avec un compte Supabase de recette confirmé. Consentir à la liaison avec un agenda de test. Observer la liste des agendas et un créneau occupé.
 - Confirmer un créneau libre, relire la séance dans l’agenda secondaire, répéter la requête avec le même UUID et vérifier qu’un seul événement existe. Tester un conflit réel et la révocation.
 - Tester la pause des rappels et le mode neutre sur écran verrouillé, puis relever les réponses `template` ou `model` ainsi que la latence.
+- Avec une configuration ElevenLabs autorisée, écouter le même extrait neutre deux fois depuis un compte de recette et vérifier que le second est servi sans nouvelle génération. Tester un ton direct avec et sans consentement, puis le secours iPhone avec le service indisponible.
 - Une fois la distribution autorisée, vérifier dans TestFlight le build traité et l’installation sur un appareil réel.
 
 Les migrations futures vont dans `supabase/migrations/`. Vérifier le journal avant activation d’un déploiement automatique GitHub, qui peut appliquer les migrations de la branche de production dès le push. [Intégration GitHub Supabase](https://supabase.com/docs/guides/deployment/branching/github-integration).

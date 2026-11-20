@@ -1,6 +1,6 @@
 # KAARIS — Entraînement, nutrition et suivi des habitudes
 
-Recherche vérifiée le 19 novembre 2026. Périmètre de la bêta iOS pour adultes. Les modèles ci-dessous servent à programmer des séances et à rédiger les fiches du coach.
+Recherche mise à jour le 20 novembre 2026. Périmètre de la bêta iOS pour adultes. Les modèles ci-dessous servent à programmer des séances et à rédiger les fiches du coach.
 
 ## 1. Repères scientifiques
 
@@ -29,6 +29,16 @@ Le plan prend en compte la fréquence souhaitée, le niveau déclaré, la durée
 | 6 | 2 à 3 corps entier et 3 à 4 activités faciles réparties. Un jour libre. | Par défaut, 4 séances haut et bas, 2 séances faciles. L’option avancée utilise deux cycles poussée, tirage, jambes, avec charges et volumes répartis sur les six jours. | Haut A · bas A · facile · haut B · bas B · facile · repos |
 
 Une séance facile est une activité de 15 à 35 min, choisie pour rester confortable, avec un effort permettant de parler en phrases. Une préférence de 5 ou 6 séances déclenche une proposition de répartition, sans multiplier la charge hebdomadaire par rapport au niveau actuel. En cas d’agenda trop serré, afficher les créneaux réellement disponibles et laisser l’utilisateur valider un ajustement.
+
+### Cycle de progression à proposer
+
+| Quand | Ce que la personne voit | Ce que le plan change |
+| --- | --- | --- |
+| Semaines 1 et 2 | Choisir une variante et une charge légère. Finir les séries avec l’impression de pouvoir encore faire deux ou trois répétitions propres. | Maintenir peu de séries, le même exercice et des créneaux récupérables. Pour une personne en reprise qui veut 5 ou 6 séances, composer avec deux ou trois renforcements et des séances faciles. |
+| Semaines 3 et 4 | Refaire les mouvements et noter charge, répétitions et effort. Un effort très difficile ou une technique qui se dégrade invite à alléger. | Augmenter d’abord les répétitions dans la fourchette. Proposer le plus petit palier de charge après deux expositions maîtrisées. La personne le valide. |
+| Bilan | Comparer les séances prévues, terminées et déplacées. Examiner la récupération et la régularité. | Reprendre un créneau réaliste si des séances glissent. Ajuster une variable de difficulté à la fois. Un volume hebdomadaire plus haut se répartit sur les jours disponibles et se construit progressivement. |
+
+Les durées, seuils et phases du tableau sont des choix de produit. Le réglage de l’effort peut rester simple (« il me restait plusieurs répétitions », « encore une ou deux », « aucune »). Une méta-régression exploratoire sur les répétitions en réserve associe une plus grande proximité de l’échec à davantage d’hypertrophie, avec une distance optimale incertaine et des mesures souvent estimées. La force progresse sur une plage d’effort plus large. Une autre méta-régression trouve des rendements décroissants quand le volume augmente et un effet plus incertain de la fréquence sur l’hypertrophie. [Robinson et al., 2024](https://doi.org/10.1007/s40279-024-02069-2), [Pelland et al., 2025](https://pubmed.ncbi.nlm.nih.gov/41343037/), [ACSM, synthèse 2026](https://pubmed.ncbi.nlm.nih.gov/41843416/).
 
 ### Exemples d’exercices pour deux séances corps entier
 
@@ -84,6 +94,16 @@ Sur la fiche, montrer l’objectif prioritaire, le matériel, le temps prévu, l
 - **Alcool.** Si l’utilisateur le souhaite, consigner une estimation par verre standard et présenter les repères français de moindre risque, jusqu’à 10 verres par semaine, jusqu’à 2 par jour et des jours sans alcool. Une suspicion de dépendance appelle une orientation adaptée, car arrêter brutalement peut être dangereux. [Santé publique France, alcool](https://www.santepubliquefrance.fr/alcool/comment-reduire-les-risques-de-la-consommation-dalcool), [NHS, dépendance à l’alcool](https://www.nhs.uk/conditions/alcohol-use-disorder/).
 - **Tabac ou vape.** Permettre à l’utilisateur de définir son objectif et d’accéder à des ressources d’accompagnement. Traiter les difficultés de sevrage avec un ton neutre. [OMS, aide à l’arrêt du tabac](https://www.who.int/publications/i/item/9789240096431).
 
+### Manger autour d’une séance
+
+**Avant.** Prévois de l’eau et un repas ou une collation que tu digères bien selon l’heure et ta faim. Exemples simples pour une journée chargée. Un fruit et un laitage ou une alternative au soja. Du pain et des œufs. Un repas habituel avec légumes, féculent et source de protéines.
+
+**Pendant.** Sur une séance habituelle de renforcement, garde de l’eau disponible. Adapte la quantité et les pauses à la chaleur, à la durée, à l’effort et à la soif. Les besoins lors d’efforts longs ou intenses demandent une approche spécifique.
+
+**Après.** Reprends tes repas habituels et mets-y une source de protéines. Un adulte actif peut privilégier les quantités et la qualité des apports sur la journée. Les protocoles de récupération rapide concernent surtout des entraînements rapprochés ou prolongés. [Thomas, Erdman et Burke, position commune de nutrition sportive](https://pubmed.ncbi.nlm.nih.gov/26920240/), [Morton et al., protéines et renforcement](https://pubmed.ncbi.nlm.nih.gov/28698222/).
+
+Dans l’app, proposer une seule action nutritionnelle à choisir par semaine, par exemple préparer deux repas faciles, prévoir une gourde ou ajouter une source de protéines à un repas régulier. Le bilan peut demander « Ça tient dans ta semaine ? ». L’utilisateur peut ignorer les cartes nutrition et garder le programme sportif.
+
 ## 4. Règles de publication et tests
 
 - Versionner les exercices et fiches avec leur source, leur public, leur date de vérification et leur texte. Chaque version de plan identifie le modèle utilisé. Le moteur applique les règles de progression et le ton choisi avant l’affichage d’une suggestion.
@@ -92,3 +112,11 @@ Sur la fiche, montrer l’objectif prioritaire, le matériel, le temps prévu, l
 - Une douleur thoracique, un essoufflement inhabituel, un malaise ou une syncope déclenche l’arrêt de l’effort, la suspension des relances et une orientation adaptée. Un symptôme grave ou en cours doit conduire à proposer les services d’urgence locaux. Utiliser un message prédéfini. [HAS, consultation et activité physique](https://www.has-sante.fr/jcms/c_2876894/fr/guide-de-promotion-consultation-et-prescription-medicale-d-activite-physique-et-sportive-pour-la-sante-chez-les-adultes).
 - Vérifier notamment les cas suivants. Un débutant choisit six jours et reçoit une alternance compatible avec sa récupération. Une séance reportée conserve un intervalle de repos. Une mesure de poids omise laisse l’entraînement accessible. Un symptôme d’alerte avec insultes au niveau maximal produit le même message d’arrêt qu’en mode neutre. Le retrait du consentement prend effet sur la prochaine relance.
 - Évaluer la bêta sur les séances confirmées et programmées, les reports replanifiés, l’activation et la rétention par niveau de relances, les mises en sourdine et les retours volontaires. Les résultats servent à ajuster le produit. Une comparaison entre niveaux choisis par les utilisateurs ne démontre pas un effet causal du ton.
+
+## 5. Fiches des exercices dans l’app
+
+Dans le détail d’une séance, toucher un exercice ouvre sa fiche. L’installation, le mouvement, la respiration, une erreur fréquente et une adaptation ou une progression sont propres à la variante du plan. Le schéma tourne à la demande, avec pause, lecture normale ou ralentie et sélection des poses. Avec l’option iOS Réduire les animations, seules les poses statiques sont proposées. Le catalogue est local et fonctionne hors ligne.
+
+Les schémas sont des silhouettes dessinées pour illustrer la trajectoire. Par exemple, la fiche « Vélo ou tapis » montre la marche sur tapis et explique aussi le réglage du vélo. Le dessin et les instructions devront être relus avant diffusion publique par une personne qualifiée, notamment les amplitudes, les appuis et les équipements. [ACE, bibliothèque d’exercices](https://www.acefitness.org/resources/everyone/exercise-library/), [ACE, presse à cuisses](https://www.acefitness.org/resources/everyone/exercise-library/154/seated-leg-press/), [ACE, gainage](https://www.acefitness.org/resources/everyone/exercise-library/32/front-plank/), [ACE, pont fessier](https://www.acefitness.org/resources/everyone/exercise-library/49/glute-bridge/).
+
+Perplexity Search a servi à repérer les publications lors de deux recherches le 20 novembre 2026. Les conclusions ci-dessus s’appuient sur les publications et recommandations consultées. [Perplexity Search API](https://docs.perplexity.ai/docs/search/quickstart).

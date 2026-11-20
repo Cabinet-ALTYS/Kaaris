@@ -1,4 +1,5 @@
 import { createApp } from "./app.mjs";
+import { voiceConfiguration } from "./voice.mjs";
 
 function required(name) {
   const value = process.env[name]?.trim();
@@ -38,7 +39,7 @@ const inferenceOrigin = process.env.INFERENCE_ORIGIN
   ? baseURL(process.env.INFERENCE_ORIGIN, "INFERENCE_ORIGIN", ["http:", "https:"])
   : undefined;
 
-const app = createApp({ supabase, google, inferenceOrigin });
+const app = createApp({ supabase, google, inferenceOrigin, voice: voiceConfiguration(process.env) });
 app.listen(Number(process.env.PORT ?? 8787), process.env.HOST ?? "127.0.0.1", () => {
   console.log("KAARIS API ready");
 });

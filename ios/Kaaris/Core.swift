@@ -57,33 +57,47 @@ struct CoachPreferences: Codable, Equatable {
     var reminderIntensity = 1
     var bluntConsent = false {
         didSet {
-            if !bluntConsent && languageIntensity > 1 { languageIntensity = 1 }
+            if !bluntConsent {
+                languageIntensity = min(languageIntensity, 1)
+                bluntNotificationConsent = nil
+            }
         }
     }
+    var bluntNotificationConsent: Bool?
     var remindersEnabled = false
     var quietStartHour = 22
     var quietEndHour = 7
     var pausedUntil: Date?
     var onlineCoachConsent: Bool?
+    var elevenLabsVoiceConsent: Bool?
 
     var onlineCoachConsented: Bool { onlineCoachConsent == true }
-    var maxLanguageIntensity: Int { bluntConsent ? 3 : 1 }
+    var maxLanguageIntensity: Int { bluntConsent ? 4 : 1 }
     var effectiveLanguageIntensity: Int { max(0, min(maxLanguageIntensity, languageIntensity)) }
+    var bluntNotificationsEnabled: Bool { bluntConsent && bluntNotificationConsent == true && effectiveLanguageIntensity >= 2 }
 
-    var previewMessage: String {
-        let language = [
-            "Tu as une séance prévue.",
-            "Allez, arrête de négocier.",
-            "Bouge-toi, t’avais dit que tu irais.",
-            "Debout, bouffon. On avait dit séance aujourd’hui."
-        ]
+    var previewMessage: String { coachMessage() }
+
+    func coachMessage(variant: Int = 0) -> String {
         let pressure = [
             "Tu confirmes ou tu la décales ?",
             "Rappelle-toi l’objectif que tu t’es fixé.",
             "Ton défi du jour, c’est d’y aller et de faire le premier exercice.",
             "Tu t’étais donné ta parole. Qu’est-ce que tu fais pour la tenir aujourd’hui ?"
         ]
-        return "\(language[effectiveLanguageIntensity]) \(pressure[max(0, min(3, egoPressure))])"
+        return "\(coachOpener(variant: variant)) \(pressure[max(0, min(3, egoPressure))])"
+    }
+
+    func coachOpener(variant: Int) -> String {
+        let lines = [
+            ["Tu as une séance prévue.", "On fait le point sur ta séance.", "Reviens à ton planning."],
+            ["Allez, arrête de négocier.", "Tu l’as calée, cette séance. Fais le point.", "Regarde le créneau que tu as choisi."],
+            ["Bouge-toi, t’avais dit que tu irais.", "Allez, fais pas traîner le pointage.", "T’as bloqué l’heure. Maintenant assume le plan."],
+            ["Debout, bouffon. Tu t’étais calé une séance.", "Bouffon, t’as réservé une séance, pas une excuse.", "Arrête ton cinéma, bouffon. On fait le point."],
+            ["Putain, bouge ton cul. On fait le point.", "Arrête tes conneries. T’as fixé une heure, tiens-la.", "T’as bloqué ton créneau. Alors bouge, bordel."]
+        ]
+        let choices = lines[effectiveLanguageIntensity]
+        return choices[max(0, variant) % choices.count]
     }
 
     func isQuiet(at date: Date, calendar: Calendar = .current) -> Bool {
@@ -148,7 +162,9 @@ final class CoachStore: ObservableObject {
     @Published var preferences: CoachPreferences {
         didSet {
             save()
-            refreshReminders()
+            let toneReduced = preferences.effectiveLanguageIntensity < oldValue.effectiveLanguageIntensity
+            let clearBluntDelivery = oldValue.bluntNotificationsEnabled && (!preferences.bluntNotificationsEnabled || toneReduced)
+            refreshReminders(clearBluntDelivery: clearBluntDelivery)
         }
     }
     @Published private(set) var sessions: [WorkoutSession] {
@@ -158,6 +174,7 @@ final class CoachStore: ObservableObject {
         }
     }
     @Published private(set) var hasOnboarded: Bool { didSet { save() } }
+    @Published private(set) var notificationDelivery = ReminderDelivery.initial
 
     let isDemo: Bool
     private let defaults: UserDefaults
@@ -256,10 +273,18 @@ final class CoachStore: ObservableObject {
         return true
     }
 
-    func refreshReminders() {
+    func refreshReminders(clearBluntDelivery: Bool = false) {
         guard !isDemo else { return }
-        scheduler.replace(sessions: sessions, preferences: preferences)
+        scheduler.replace(sessions: sessions, preferences: preferences, clearBluntDelivery: clearBluntDelivery)
         publishWidget()
+    }
+
+    var plannedReminderCount: Int {
+        ReminderPlan.make(sessions: sessions, preferences: preferences, now: .now).count
+    }
+
+    func updateNotificationDelivery() async {
+        notificationDelivery = isDemo ? .demo : await scheduler.deliverySettings()
     }
 
     @discardableResult
@@ -267,7 +292,21 @@ final class CoachStore: ObservableObject {
         guard !isDemo else { return false }
         let authorized = await scheduler.requestPermission()
         preferences.remindersEnabled = authorized
+        await updateNotificationDelivery()
         return authorized
+    }
+
+    @discardableResult
+    func sendTestNotification() async -> Bool {
+        guard !isDemo else { return false }
+        if await scheduler.deliverySettings().authorization == .notRequested,
+           !(await scheduler.requestPermission()) {
+            await updateNotificationDelivery()
+            return false
+        }
+        let sent = await scheduler.sendTest()
+        await updateNotificationDelivery()
+        return sent
     }
 
     private func save() {

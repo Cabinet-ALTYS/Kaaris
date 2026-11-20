@@ -3,11 +3,13 @@ import { ApiError, readJSON, writeJSON } from "./http.mjs";
 import { createCoach } from "./coach.mjs";
 import { createGoogle } from "./google.mjs";
 import { createSupabase } from "./supabase.mjs";
+import { createVoice } from "./voice.mjs";
 
 export function createApp(config, fetcher = fetch) {
   const supabase = createSupabase(config.supabase, fetcher);
   const google = config.google ? createGoogle(config.google, supabase, fetcher) : null;
   const coach = createCoach(config.inferenceOrigin, fetcher);
+  const voice = createVoice(config.voice, fetcher);
 
   async function dispatch(request, response) {
     const url = new URL(request.url, "http://kaaris.local");
@@ -39,6 +41,18 @@ export function createApp(config, fetcher = fetch) {
     if (route === "POST /v1/coach/message") {
       const message = await coach(await readJSON(request));
       return writeJSON(response, 200, message);
+    }
+    if (route === "GET /v1/voice/status") {
+      return writeJSON(response, 200, { available: voice.available });
+    }
+    if (route === "POST /v1/voice/check-in") {
+      if (!voice.available) throw new ApiError(503, "voice_not_configured");
+      const audio = await voice.speak(userId, await readJSON(request));
+      response.writeHead(200, {
+        "Content-Type": "audio/mpeg",
+        "Content-Length": audio.length
+      });
+      return response.end(audio);
     }
     if (!google && url.pathname.startsWith("/v1/google/")) {
       throw new ApiError(503, "google_not_configured");

@@ -321,13 +321,14 @@ private struct KaarisAPI {
         method: String,
         body: Data?,
         token: String,
-        timeout: TimeInterval = 30
+        timeout: TimeInterval = 30,
+        accept: String = "application/json"
     ) async throws -> Data {
         let url = rootURL.appending(path: "v1").appending(path: path)
         var request = URLRequest(url: url, timeoutInterval: timeout)
         request.httpMethod = method
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue(accept, forHTTPHeaderField: "Accept")
         if let body {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = body
@@ -373,6 +374,28 @@ private struct CoachOnlineResponse: Decodable {
     enum Source: String, Decodable { case model, template }
     let text: String
     let source: Source
+}
+
+enum CoachVoicePhase: String, Codable, Sendable {
+    case greeting, workout, nutrition, closing
+}
+
+private struct CoachVoiceRequest: Encodable {
+    enum Tone: String, Encodable { case neutral, direct, intense }
+
+    let phase: CoachVoicePhase
+    let tone: Tone
+    let bluntToneConsented: Bool
+
+    init(phase: CoachVoicePhase, preferences: CoachPreferences) {
+        self.phase = phase
+        bluntToneConsented = preferences.bluntConsent
+        switch preferences.effectiveLanguageIntensity {
+        case 3...: tone = .intense
+        case 1...2: tone = .direct
+        default: tone = .neutral
+        }
+    }
 }
 
 private struct AgendaProposal {
@@ -515,6 +538,7 @@ final class KaarisConnection: ObservableObject {
     fileprivate var googleConfigured: Bool { !demo && configuration.apiURL != nil }
     var isSignedIn: Bool { session != nil }
     var coachConfigured: Bool { authConfigured && googleConfigured }
+    var voiceConfigured: Bool { coachConfigured }
 
     private var auth: AgendaAuthAPI? {
         guard let url = configuration.supabaseURL, let key = configuration.publishableKey else { return nil }
@@ -730,6 +754,26 @@ final class KaarisConnection: ObservableObject {
         }
     }
 
+    func voiceCheckIn(phase: CoachVoicePhase, preferences: CoachPreferences) async -> Data? {
+        guard voiceConfigured, isSignedIn, preferences.elevenLabsVoiceConsent == true,
+              !working, !Task.isCancelled else { return nil }
+        working = true
+        defer { working = false }
+
+        do {
+            let request = CoachVoiceRequest(phase: phase, preferences: preferences)
+            let audio = try await send("voice/check-in", method: "POST",
+                                       body: KaarisAPI.encode(request), timeout: 8, accept: "audio/mpeg")
+            guard !Task.isCancelled, (4...(512 * 1024)).contains(audio.count) else { return nil }
+            let prefix = Array(audio.prefix(3))
+            let hasID3 = prefix == [0x49, 0x44, 0x33]
+            let hasFrameSync = prefix[0] == 0xff && (prefix[1] & 0xe0) == 0xe0
+            return hasID3 || hasFrameSync ? audio : nil
+        } catch {
+            return nil
+        }
+    }
+
     private func updateGoogleStatus() async throws {
         let statusData = try await send("google/status")
         let status = try KaarisAPI.decode(KaarisAPI.Status.self, from: statusData)
@@ -786,7 +830,8 @@ final class KaarisConnection: ObservableObject {
         _ path: String,
         method: String = "GET",
         body: Data? = nil,
-        timeout: TimeInterval = 30
+        timeout: TimeInterval = 30,
+        accept: String = "application/json"
     ) async throws -> Data {
         guard !demo, let url = configuration.apiURL else { throw AgendaError.unavailable }
         try Task.checkCancellation()
@@ -794,12 +839,12 @@ final class KaarisConnection: ObservableObject {
         let token = try await accessToken()
         try Task.checkCancellation()
         do {
-            return try await api.send(path, method: method, body: body, token: token, timeout: timeout)
+            return try await api.send(path, method: method, body: body, token: token, timeout: timeout, accept: accept)
         } catch let AgendaError.http(status, _) where status == 401 {
             try Task.checkCancellation()
             let renewed = try await accessToken(replacing: token)
             try Task.checkCancellation()
-            return try await api.send(path, method: method, body: body, token: renewed, timeout: timeout)
+            return try await api.send(path, method: method, body: body, token: renewed, timeout: timeout, accept: accept)
         }
     }
 

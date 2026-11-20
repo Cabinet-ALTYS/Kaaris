@@ -24,7 +24,12 @@ struct KaarisApp: App {
                 .tint(acid)
                 .task { connection.restoreAccount() }
                 .onChange(of: connection.isSignedIn) { wasSignedIn, isSignedIn in
-                    if wasSignedIn && !isSignedIn { store.preferences.onlineCoachConsent = nil }
+                    if wasSignedIn && !isSignedIn {
+                        var preferences = store.preferences
+                        preferences.onlineCoachConsent = nil
+                        preferences.elevenLabsVoiceConsent = nil
+                        store.preferences = preferences
+                    }
                 }
         }
     }
@@ -37,18 +42,37 @@ final class NotificationDelegate: NSObject, UIApplicationDelegate, UNUserNotific
     }
 
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
-        await MainActor.run {
-            NotificationCenter.default.post(name: .openCoachCheckin, object: nil)
-        }
+        guard response.actionIdentifier == UNNotificationDefaultActionIdentifier else { return }
+        await route(response.notification.request)
     }
 
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
-        [.banner, .sound]
+        let request = notification.request
+        if request.identifier.hasPrefix(ReminderPlan.identifierPrefix),
+           request.content.userInfo["foregroundCall"] as? Bool == true {
+            await route(request)
+            return [.sound]
+        }
+        return [.banner, .sound]
+    }
+
+    private nonisolated func route(_ request: UNNotificationRequest) async {
+        guard request.identifier.hasPrefix(ReminderPlan.identifierPrefix) || request.identifier == ReminderPlan.testIdentifier else { return }
+        let info = request.content.userInfo
+        let destination = ReminderDestination(
+            target: (info["target"] as? String).flatMap(ReminderTarget.init(rawValue:)) ?? .coach,
+            sessionID: (info["sessionID"] as? String).flatMap(UUID.init(uuidString:))
+        )
+        await MainActor.run {
+            ReminderInbox.shared.destination = destination
+        }
     }
 }
 
-extension Notification.Name {
-    static let openCoachCheckin = Notification.Name("openCoachCheckin")
+@MainActor
+final class ReminderInbox: ObservableObject {
+    static let shared = ReminderInbox()
+    @Published var destination: ReminderDestination?
 }
 
 enum KaarisTab: String, CaseIterable {
@@ -70,7 +94,9 @@ enum KaarisTab: String, CaseIterable {
 struct KaarisRoot: View {
     @EnvironmentObject private var store: CoachStore
     @Environment(\.scenePhase) private var scenePhase
+    @ObservedObject private var inbox = ReminderInbox.shared
     @State private var selection = KaarisTab.home
+    @State private var call: CoachCallInvitation?
 
     var body: some View {
         ZStack {
@@ -119,14 +145,37 @@ struct KaarisRoot: View {
                 selection = option
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .openCoachCheckin)) { _ in
-            selection = .coach
+        .onChange(of: inbox.destination, initial: true) { _, destination in
+            guard let destination, store.hasOnboarded else { return }
+            inbox.destination = nil
+            openReminder(destination)
         }
         .onOpenURL { url in
             if url.scheme == "kaaris", url.host == "checkin" { selection = .coach }
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active, store.hasOnboarded { store.refreshReminders() }
+            if phase == .active, store.hasOnboarded {
+                store.refreshReminders()
+                Task { await store.updateNotificationDelivery() }
+            }
+        }
+        .sheet(item: $call) { invitation in
+            CoachCallSheet(invitation: invitation)
+        }
+    }
+
+    private func openReminder(_ destination: ReminderDestination) {
+        guard call == nil else { return }
+        selection = .coach
+        switch destination.target {
+        case .coach: break
+        case .test:
+            call = CoachCallInvitation(sessionID: nil, isTest: true)
+        case .call:
+            guard let id = destination.sessionID,
+                  let session = store.sessions.first(where: { $0.id == id }),
+                  session.status == .planned || session.status == .checkedIn else { return }
+            call = CoachCallInvitation(sessionID: id, isTest: false)
         }
     }
 }
