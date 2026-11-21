@@ -10,6 +10,26 @@ struct TodayScreen: View {
         return upcoming.first { $0.date >= .now } ?? upcoming.last
     }
 
+    private var hasFutureSession: Bool {
+        store.sessions.contains { $0.status == .planned && $0.date > .now }
+    }
+
+    private var reminderNotice: String? {
+        guard !store.isDemo else { return nil }
+        let delivery = store.notificationDelivery
+        if delivery.authorization == .denied { return "iOS bloque les notifications de KAARIS." }
+        if !store.preferences.remindersEnabled || store.preferences.reminderIntensity == 0 {
+            return "Les relances sont désactivées dans KAARIS."
+        }
+        if delivery.authorization == .notRequested { return "KAARIS attend ton autorisation iOS." }
+        if delivery.authorization.acceptsReminders && !delivery.banners && !delivery.lockScreen && !delivery.notificationCenter {
+            return "Aucun affichage de notification n’est activé dans iOS."
+        }
+        if !hasFutureSession && delivery.pendingCount == 0 { return "Programme ta prochaine séance." }
+        if delivery.authorization.acceptsReminders && delivery.pendingCount == 0 { return "Aucune relance en file d’attente iOS." }
+        return nil
+    }
+
     var body: some View {
         KPage {
             HStack {
@@ -24,6 +44,18 @@ struct TodayScreen: View {
             VStack(alignment: .leading, spacing: 3) {
                 SectionLabel(text: "AUJOURD’HUI")
                 KTitle(text: "PLACE À L’ACTION.")
+            }
+
+            if let reminderNotice {
+                VStack(alignment: .leading, spacing: 8) {
+                    SectionLabel(text: "RELANCES")
+                    Text(reminderNotice).font(.subheadline).foregroundStyle(muted)
+                    ViewThatFits(in: .horizontal) {
+                        HStack { reminderActions }
+                        VStack { reminderActions }
+                    }
+                }
+                .kPanel()
             }
 
             ZStack(alignment: .bottomLeading) {
@@ -52,6 +84,10 @@ struct TodayScreen: View {
                         Spacer(minLength: 6)
                         Text(hourLabel(next.date)).font(.system(size: 26, weight: .black, design: .monospaced))
                     }
+                    if let date = store.notificationDelivery.nextReminderDate {
+                        Label("Prochaine relance \(dateLabel(date)), à \(hourLabel(date))", systemImage: "bell")
+                            .font(.footnote).foregroundStyle(muted)
+                    }
                     NavigationLink {
                         WorkoutDetail(sessionID: next.id)
                     } label: {
@@ -60,9 +96,24 @@ struct TodayScreen: View {
                     .buttonStyle(ActionStyle())
                 }
                 .kPanel()
-            } else {
+            } else if reminderNotice == nil {
                 Button("Voir mon programme") { selection = .plan }.buttonStyle(ActionStyle())
             }
+        }
+    }
+
+    @ViewBuilder
+    private var reminderActions: some View {
+        if !store.preferences.remindersEnabled, store.notificationDelivery.authorization != .denied {
+            Button("Activer les relances") { Task { await store.requestNotifications() } }
+                .buttonStyle(ActionStyle(filled: false))
+        } else {
+            Button("Régler les relances") { selection = .settings }
+                .buttonStyle(ActionStyle(filled: false))
+        }
+        if !hasFutureSession {
+            Button("Voir mon programme") { selection = .plan }
+                .buttonStyle(ActionStyle(filled: false))
         }
     }
 }

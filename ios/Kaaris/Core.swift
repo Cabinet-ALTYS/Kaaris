@@ -54,7 +54,7 @@ struct CoachProfile: Codable, Equatable {
 struct CoachPreferences: Codable, Equatable {
     var languageIntensity = 0
     var egoPressure = 0
-    var reminderIntensity = 1
+    var reminderIntensity = 2
     var bluntConsent = false {
         didSet {
             if !bluntConsent {
@@ -275,16 +275,14 @@ final class CoachStore: ObservableObject {
 
     func refreshReminders(clearBluntDelivery: Bool = false) {
         guard !isDemo else { return }
-        scheduler.replace(sessions: sessions, preferences: preferences, clearBluntDelivery: clearBluntDelivery)
+        scheduler.replace(sessions: sessions, preferences: preferences, clearBluntDelivery: clearBluntDelivery) { [weak self] delivery in
+            self?.notificationDelivery = delivery
+        }
         publishWidget()
     }
 
-    var plannedReminderCount: Int {
-        ReminderPlan.make(sessions: sessions, preferences: preferences, now: .now).count
-    }
-
     func updateNotificationDelivery() async {
-        notificationDelivery = isDemo ? .demo : await scheduler.deliverySettings()
+        notificationDelivery = isDemo ? .demo : await scheduler.settledDelivery()
     }
 
     @discardableResult

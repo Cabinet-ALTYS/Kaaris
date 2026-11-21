@@ -179,12 +179,8 @@ struct SettingsScreen: View {
                 Divider()
                 slider("Relances par séance", labels: ["0 · Coupées", "1 · Avant", "2 · Pointage", "3 · Suivi", "4 · Préparation", "5 · Maximum"],
                        value: $store.preferences.reminderIntensity, maxValue: ReminderPlan.maxDailyReminders)
-                Text("Jusqu’à cinq relances par jour, pendant les heures actives.")
+                Text("Cinq relances par jour au maximum.")
                     .font(.footnote).foregroundStyle(muted)
-                if store.preferences.reminderIntensity == ReminderPlan.maxDailyReminders {
-                    Text("Au niveau maximum, certains rappels ouvrent l’appel simulé si KAARIS est déjà à l’écran.")
-                        .font(.footnote).foregroundStyle(muted)
-                }
                 Divider()
                 slider("Pression sur l’ego", labels: ["Factuelle", "Objectif", "Défi", "Parole donnée"],
                        value: $store.preferences.egoPressure)
@@ -201,12 +197,9 @@ struct SettingsScreen: View {
                 }
                 if store.notificationDelivery.authorization.acceptsReminders {
                     deliveryDetails
+                    queuedReminders
                 }
                 if store.preferences.remindersEnabled {
-                    Text(store.plannedReminderCount > 0
-                         ? "\(store.plannedReminderCount) relances à venir selon ton planning."
-                         : "Aucune relance à venir. Vérifie tes séances, ta pause et tes horaires de silence.")
-                        .font(.footnote).foregroundStyle(muted)
                     Button("Désactiver les relances") { store.preferences.remindersEnabled = false }
                         .buttonStyle(ActionStyle(filled: false))
                 } else if store.notificationDelivery.authorization != .denied {
@@ -233,7 +226,7 @@ struct SettingsScreen: View {
                         checkingNotifications = true
                         Task {
                             let sent = await store.sendTestNotification()
-                            notificationFeedback = sent ? "Test programmé dans deux secondes. Touche-le pour essayer l’appel." : "iOS n’a pas accepté le test."
+                            notificationFeedback = sent ? "Test en file iOS. Touche la notification pour essayer l’appel." : "iOS n’a pas accepté le test."
                             checkingNotifications = false
                         }
                     }
@@ -243,6 +236,12 @@ struct SettingsScreen: View {
                 if let notificationFeedback {
                     Text(notificationFeedback).font(.footnote).foregroundStyle(muted)
                 }
+                Button("Essayer un appel maintenant") {
+                    ReminderInbox.shared.destination = ReminderDestination(target: .test, sessionID: nil)
+                }
+                .buttonStyle(ActionStyle(filled: false))
+                Text("Quand KAARIS est fermée, touche la notification de pointage pour ouvrir l’appel.")
+                    .font(.footnote).foregroundStyle(muted)
 
                 Toggle("Afficher le langage cru dans les notifications", isOn: Binding(
                     get: { store.preferences.bluntConsent && store.preferences.bluntNotificationConsent == true },
@@ -250,7 +249,7 @@ struct SettingsScreen: View {
                 ))
                 .font(.subheadline)
                 .disabled(!store.preferences.bluntConsent || store.isDemo)
-                Text("Ce texte peut être visible sur ton écran verrouillé. Le ton sélectionné s’applique aux prochaines relances.")
+                Text("Ce texte peut être visible sur ton écran verrouillé.")
                     .font(.footnote).foregroundStyle(muted)
 
                 if !store.isDemo {
@@ -331,12 +330,53 @@ struct SettingsScreen: View {
         let delivery = store.notificationDelivery
         let banners = delivery.banners ? "Bannières : oui" : "Bannières : non"
         let lockScreen = delivery.lockScreen ? "Écran verrouillé : oui" : "Écran verrouillé : non"
+        let center = delivery.notificationCenter ? "Centre de notifications : oui" : "Centre de notifications : non"
         let sound = delivery.sound ? "Son : oui" : "Son : non"
         return VStack(alignment: .leading, spacing: 4) {
-            Text("\(banners) · \(lockScreen) · \(sound)")
+            Text("\(banners) · \(lockScreen)")
+            Text("\(center) · \(sound)")
             if delivery.scheduledSummary { Text("Le résumé iOS peut différer l’affichage.") }
         }
         .font(.footnote).foregroundStyle(muted)
+    }
+
+    private var queuedReminders: some View {
+        let delivery = store.notificationDelivery
+        return VStack(alignment: .leading, spacing: 4) {
+            if delivery.pendingCount == 0 {
+                Text("Aucune relance en file iOS.").font(.subheadline.weight(.semibold))
+                if let reason = emptyQueueReason {
+                    Text(reason).font(.footnote).foregroundStyle(muted)
+                }
+            } else {
+                Text("\(delivery.pendingCount) \(delivery.pendingCount == 1 ? "relance" : "relances") en file iOS.")
+                    .font(.subheadline.weight(.semibold))
+                if let date = delivery.nextReminderDate {
+                    Text("Prochaine \(dateLabel(date)), à \(hourLabel(date)).")
+                        .font(.footnote).foregroundStyle(muted)
+                }
+            }
+        }
+    }
+
+    private var emptyQueueReason: String? {
+        let preferences = store.preferences
+        if !preferences.remindersEnabled { return "Active les relances dans KAARIS." }
+        if preferences.reminderIntensity == 0 { return "Le niveau de relance est à 0." }
+        if let until = preferences.pausedUntil, pauseActive {
+            return "Pause jusqu’au \(dateLabel(until)) à \(hourLabel(until))."
+        }
+        let now = Date.now
+        if !store.sessions.contains(where: { $0.status == .planned && $0.date > now }) {
+            return "Aucune séance future à relancer."
+        }
+        var withoutQuietHours = preferences
+        withoutQuietHours.quietEndHour = withoutQuietHours.quietStartHour
+        if ReminderPlan.make(sessions: store.sessions, preferences: preferences, now: now).isEmpty,
+           !ReminderPlan.make(sessions: store.sessions, preferences: withoutQuietHours, now: now).isEmpty {
+            return "Les prochaines relances tombent pendant les heures de silence."
+        }
+        return nil
     }
 
     private func slider(_ title: String, labels: [String], value: Binding<Int>, maxValue: Int = 3) -> some View {

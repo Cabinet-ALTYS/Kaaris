@@ -51,9 +51,8 @@ final class NotificationDelegate: NSObject, UIApplicationDelegate, UNUserNotific
         if request.identifier.hasPrefix(ReminderPlan.identifierPrefix),
            request.content.userInfo["foregroundCall"] as? Bool == true {
             await route(request)
-            return [.sound]
         }
-        return [.banner, .sound]
+        return [.banner, .list, .sound]
     }
 
     private nonisolated func route(_ request: UNNotificationRequest) async {
@@ -153,7 +152,7 @@ struct KaarisRoot: View {
         .onOpenURL { url in
             if url.scheme == "kaaris", url.host == "checkin" { selection = .coach }
         }
-        .onChange(of: scenePhase) { _, phase in
+        .onChange(of: scenePhase, initial: true) { _, phase in
             if phase == .active, store.hasOnboarded {
                 store.refreshReminders()
                 Task { await store.updateNotificationDelivery() }

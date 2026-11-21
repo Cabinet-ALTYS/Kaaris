@@ -32,8 +32,11 @@ struct ReminderDelivery: Equatable {
     let authorization: Authorization
     var banners = false
     var lockScreen = false
+    var notificationCenter = false
     var sound = false
     var scheduledSummary = false
+    var pendingCount = 0
+    var nextReminderDate: Date?
 
     static let initial = ReminderDelivery(authorization: .unknown)
     static let demo = ReminderDelivery(authorization: .demo)
@@ -97,20 +100,26 @@ enum ReminderPlan {
     ) -> [WorkoutReminder] {
         guard preferences.remindersEnabled, preferences.reminderIntensity > 0 else { return [] }
 
+        let start = Prompt(key: "start", offsetMinutes: 0, title: "KAARIS t’appelle", message: "Ta séance commence. Touche cette notification pour faire le point.", target: .call)
         let prompts = [
             Prompt(key: "before", offsetMinutes: -60, title: "Séance dans une heure", message: "Ta séance approche. Prends deux minutes pour te préparer.", target: .coach),
-            Prompt(key: "start", offsetMinutes: 0, title: "C’est l’heure de ta séance", message: "Ouvre le pointage KAARIS pour indiquer où tu en es.", target: .call),
+            start,
             Prompt(key: "check-in", offsetMinutes: 45, title: "Point sur ta séance", message: "Tu as pu faire ta séance ? Fais le point avec KAARIS.", target: .call),
             Prompt(key: "prepare", offsetMinutes: -180, title: "Séance aujourd’hui", message: "Vérifie ton créneau et prépare tes affaires.", target: .coach),
             Prompt(key: "follow-up", offsetMinutes: 120, title: "Confirme ta séance", message: "Fais le point sur ta séance ou reprogramme-la.", target: .call)
         ]
+        let dueDates = alreadyDue ?? ReminderLedger.load().dueDates(at: now)
+        let blunt = preferences.bluntNotificationsEnabled
+
+        func eligible(_ date: Date) -> Bool {
+            date > now && date >= (preferences.pausedUntil ?? .distantPast)
+                && !preferences.isQuiet(at: date, calendar: calendar)
+        }
 
         let candidates = sessions.filter { $0.status == .planned }.flatMap { session in
-            prompts.prefix(preferences.reminderIntensity).enumerated().compactMap { index, prompt -> WorkoutReminder? in
+            let regular = prompts.prefix(preferences.reminderIntensity).enumerated().compactMap { index, prompt -> WorkoutReminder? in
                 let date = session.date.addingTimeInterval(Double(prompt.offsetMinutes) * 60)
-                guard date > now, date >= (preferences.pausedUntil ?? .distantPast),
-                      !preferences.isQuiet(at: date, calendar: calendar) else { return nil }
-                let blunt = preferences.bluntNotificationsEnabled
+                guard eligible(date) else { return nil }
                 return WorkoutReminder(
                     identifier: identifierPrefix + session.id.uuidString + "." + prompt.key,
                     date: date,
@@ -121,9 +130,18 @@ enum ReminderPlan {
                     usesBluntTone: blunt
                 )
             }
+            // A single advance reminder may be in the past or in quiet hours when the user turns reminders on.
+            let advanceDate = session.date.addingTimeInterval(-3600)
+            guard regular.isEmpty, preferences.reminderIntensity == 1, eligible(session.date),
+                  !dueDates.contains(where: { abs($0.timeIntervalSince(advanceDate)) <= 1 }) else { return regular }
+            return [WorkoutReminder(
+                identifier: identifierPrefix + session.id.uuidString + "." + start.key,
+                date: session.date, title: start.title,
+                message: blunt ? "\(preferences.coachOpener(variant: 0)) \(start.message)" : start.message,
+                sessionID: session.id, target: .call, usesBluntTone: blunt
+            )]
         }
 
-        let dueDates = alreadyDue ?? ReminderLedger.load().dueDates(at: now)
         var byDay: [Date: Int] = [:]
         for date in dueDates {
             byDay[calendar.startOfDay(for: date), default: 0] += 1
@@ -174,13 +192,29 @@ final class ReminderScheduler {
         case .denied: authorization = .denied
         @unknown default: authorization = .unknown
         }
+        let now = Date.now
+        let dates = authorization.acceptsReminders ? await center.pendingNotificationRequests().compactMap { request -> Date? in
+            guard request.identifier.hasPrefix(ReminderPlan.identifierPrefix),
+                  let date = (request.trigger as? UNCalendarNotificationTrigger)?.nextTriggerDate(),
+                  date > now else { return nil }
+            return date
+        } : []
         return ReminderDelivery(
             authorization: authorization,
             banners: settings.alertSetting == .enabled && settings.alertStyle != .none,
             lockScreen: settings.lockScreenSetting == .enabled,
+            notificationCenter: settings.notificationCenterSetting == .enabled,
             sound: settings.soundSetting == .enabled,
-            scheduledSummary: settings.scheduledDeliverySetting == .enabled
+            scheduledSummary: settings.scheduledDeliverySetting == .enabled,
+            pendingCount: dates.count,
+            nextReminderDate: dates.min()
         )
+    }
+
+    func settledDelivery() async -> ReminderDelivery {
+        let pending = pendingReplacement
+        await pending?.value
+        return await deliverySettings()
     }
 
     func sendTest() async -> Bool {
@@ -200,7 +234,10 @@ final class ReminderScheduler {
         }
     }
 
-    func replace(sessions: [WorkoutSession], preferences: CoachPreferences, clearBluntDelivery: Bool) {
+    func replace(
+        sessions: [WorkoutSession], preferences: CoachPreferences, clearBluntDelivery: Bool,
+        didUpdate: @escaping @MainActor (ReminderDelivery) -> Void
+    ) {
         clearBluntDeliveryRequested = clearBluntDeliveryRequested || clearBluntDelivery
         revision += 1
         let target = revision
@@ -209,17 +246,48 @@ final class ReminderScheduler {
             await previous?.value
             guard let self, self.revision == target else { return }
             await self.apply(sessions: sessions, preferences: preferences, revision: target)
+            let delivery = await self.deliverySettings()
+            guard self.revision == target else { return }
+            didUpdate(delivery)
         }
     }
 
     private func apply(sessions: [WorkoutSession], preferences: CoachPreferences, revision: Int) async {
-        let existing = await center.pendingNotificationRequests().map(\.identifier)
+        let settings = await center.notificationSettings()
+        let existing = await center.pendingNotificationRequests().filter { $0.identifier.hasPrefix(ReminderPlan.identifierPrefix) }
         guard revision == self.revision else { return }
-
-        let existingWorkoutReminders = existing.filter { $0.hasPrefix(ReminderPlan.identifierPrefix) }
-        center.removePendingNotificationRequests(withIdentifiers: existingWorkoutReminders)
+        let canDeliver = [.authorized, .provisional, .ephemeral].contains(settings.authorizationStatus)
         let calendar = Calendar.current
-        ledger.cancelFuture(at: .now, calendar: calendar)
+        let now = Date.now
+        let reminders = canDeliver ? ReminderPlan.make(
+            sessions: sessions, preferences: preferences, now: now, calendar: calendar,
+            alreadyDue: ledger.dueDates(at: now)
+        ) : []
+        let existingByID = Dictionary(uniqueKeysWithValues: existing.map { ($0.identifier, $0) })
+        var keep: Set<String> = []
+        var add: [(UNNotificationRequest, Date)] = []
+        ledger.cancelFuture(at: now, calendar: calendar)
+        for reminder in reminders {
+            let trigger = Self.trigger(for: reminder.date, calendar: calendar)
+            guard let dueAt = trigger.nextTriggerDate(), dueAt > now else { continue }
+            let expected = request(for: reminder, trigger: trigger, maxIntensity: preferences.reminderIntensity == ReminderPlan.maxDailyReminders)
+            if let previous = existingByID[expected.identifier],
+               (previous.trigger as? UNCalendarNotificationTrigger)?.nextTriggerDate() == dueAt {
+                let unchanged = previous.content.title == expected.content.title
+                    && previous.content.body == expected.content.body
+                    && NSDictionary(dictionary: previous.content.userInfo).isEqual(to: expected.content.userInfo)
+                let previousWasBlunt = previous.content.userInfo["blunt"] as? Bool == true
+                // Keep a valid same-time reminder in place until the replacement is accepted.
+                if unchanged || !(clearBluntDeliveryRequested && previousWasBlunt) {
+                    keep.insert(expected.identifier)
+                    ledger.recordScheduled(at: dueAt)
+                }
+                if unchanged { continue }
+            }
+            add.append((expected, dueAt))
+        }
+        let obsolete = existingByID.keys.filter { !keep.contains($0) }
+        if !obsolete.isEmpty { center.removePendingNotificationRequests(withIdentifiers: Array(obsolete)) }
         ledger.save()
         if clearBluntDeliveryRequested {
             let delivered = await center.deliveredNotifications()
@@ -231,29 +299,15 @@ final class ReminderScheduler {
             center.removeDeliveredNotifications(withIdentifiers: blunt)
             clearBluntDeliveryRequested = false
         }
-
-        guard preferences.remindersEnabled else { return }
-        let settings = await center.notificationSettings()
-        guard revision == self.revision else { return }
-        switch settings.authorizationStatus {
-        case .authorized, .provisional, .ephemeral: break
-        case .notDetermined, .denied: return
-        @unknown default: return
-        }
-
-        let now = Date.now
-        let reminders = ReminderPlan.make(
-            sessions: sessions, preferences: preferences, now: now, calendar: calendar,
-            alreadyDue: ledger.dueDates(at: now)
-        )
-        for reminder in reminders {
+        for (request, dueAt) in add {
             guard revision == self.revision else { return }
-            let trigger = Self.trigger(for: reminder.date, calendar: calendar)
-            guard let dueAt = trigger.nextTriggerDate(), dueAt > .now else { continue }
+            guard dueAt > .now else { continue }
             do {
-                try await center.add(request(for: reminder, trigger: trigger, maxIntensity: preferences.reminderIntensity == ReminderPlan.maxDailyReminders))
-                ledger.recordScheduled(at: dueAt)
-                ledger.save()
+                try await center.add(request)
+                if !keep.contains(request.identifier) {
+                    ledger.recordScheduled(at: dueAt)
+                    ledger.save()
+                }
             } catch {
                 logger.error("Could not schedule a workout reminder")
             }
