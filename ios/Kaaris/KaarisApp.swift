@@ -78,6 +78,7 @@ enum KaarisTab: String, CaseIterable {
     case home = "Aujourd’hui"
     case plan = "Plan"
     case coach = "Coach"
+    case knowledge = "Repères"
     case settings = "Réglages"
 
     var icon: String {
@@ -85,6 +86,7 @@ enum KaarisTab: String, CaseIterable {
         case .home: "bolt.fill"
         case .plan: "calendar"
         case .coach: "waveform"
+        case .knowledge: "book.closed"
         case .settings: "slider.horizontal.3"
         }
     }
@@ -107,6 +109,7 @@ struct KaarisRoot: View {
                         case .home: TodayScreen(selection: $selection)
                         case .plan: PlanScreen()
                         case .coach: CoachScreen()
+                        case .knowledge: KnowledgeScreen()
                         case .settings: SettingsScreen()
                         }
                     }

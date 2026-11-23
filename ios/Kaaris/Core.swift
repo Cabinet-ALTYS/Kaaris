@@ -134,6 +134,7 @@ struct WorkoutSession: Codable, Equatable, Identifiable {
     let focus: String
     let exercises: [WorkoutExercise]
     var status: WorkoutStatus
+    let equipment: WorkoutEquipment?
 
     init(
         id: UUID = UUID(),
@@ -142,7 +143,8 @@ struct WorkoutSession: Codable, Equatable, Identifiable {
         durationMinutes: Int,
         focus: String,
         exercises: [WorkoutExercise],
-        status: WorkoutStatus = .planned
+        status: WorkoutStatus = .planned,
+        equipment: WorkoutEquipment? = nil
     ) {
         self.id = id
         self.title = title
@@ -151,6 +153,7 @@ struct WorkoutSession: Codable, Equatable, Identifiable {
         self.focus = focus
         self.exercises = exercises
         self.status = status
+        self.equipment = equipment
     }
 
     var endDate: Date { date.addingTimeInterval(Double(durationMinutes) * 60) }
@@ -175,6 +178,7 @@ final class CoachStore: ObservableObject {
     }
     @Published private(set) var hasOnboarded: Bool { didSet { save() } }
     @Published private(set) var notificationDelivery = ReminderDelivery.initial
+    @Published private(set) var workoutLogs: [UUID: WorkoutLog] = [:]
 
     let isDemo: Bool
     private let defaults: UserDefaults
@@ -208,7 +212,8 @@ final class CoachStore: ObservableObject {
                         durationMinutes: first.durationMinutes,
                         focus: first.focus,
                         exercises: first.exercises,
-                        status: .completed
+                        status: .completed,
+                        equipment: first.equipment
                     ),
                     at: 0
                 )
@@ -221,6 +226,7 @@ final class CoachStore: ObservableObject {
             preferences = snapshot.preferences
             sessions = snapshot.sessions
             hasOnboarded = snapshot.hasOnboarded
+            workoutLogs = snapshot.workoutLogs ?? [:]
         } else {
             profile = CoachProfile()
             preferences = CoachPreferences()
@@ -250,7 +256,29 @@ final class CoachStore: ObservableObject {
     func updateStatus(_ status: WorkoutStatus, for id: UUID) {
         guard let index = sessions.firstIndex(where: { $0.id == id }),
               sessions[index].status != status else { return }
+        if status == .completed, workoutLogs[id] == nil {
+            workoutLogs[id] = WorkoutLog(sessionID: id, performedAt: .now, equipment: sessions[index].equipment, exercises: [])
+        }
         sessions[index].status = status
+    }
+
+    func saveWorkoutLog(_ log: WorkoutLog) throws {
+        guard let index = sessions.firstIndex(where: { $0.id == log.sessionID }) else { throw WorkoutLogError.invalidRecord }
+        try log.validate(for: sessions[index])
+        workoutLogs[log.sessionID] = log
+        if sessions[index].status == .completed {
+            save()
+        } else {
+            sessions[index].status = .completed
+        }
+    }
+
+    var completedSessions: [WorkoutSession] {
+        sessions.filter { $0.status == .completed }.sorted { completionDate(for: $0) > completionDate(for: $1) }
+    }
+
+    func completionDate(for session: WorkoutSession) -> Date {
+        workoutLogs[session.id]?.performedAt ?? session.date
     }
 
     @discardableResult
@@ -313,7 +341,8 @@ final class CoachStore: ObservableObject {
             profile: profile,
             preferences: preferences,
             sessions: sessions,
-            hasOnboarded: hasOnboarded
+            hasOnboarded: hasOnboarded,
+            workoutLogs: workoutLogs
         )
         if let data = try? JSONEncoder().encode(snapshot) {
             defaults.set(data, forKey: Self.storageKey)
@@ -323,14 +352,21 @@ final class CoachStore: ObservableObject {
 
     private func publishWidget() {
         guard hasOnboarded else { return }
-        WidgetSnapshot.publish(sessions: sessions, goal: profile.sessionsPerWeek)
+        let widgetSessions = sessions.map { session in
+            guard session.status == .completed else { return session }
+            var completed = session
+            completed.date = completionDate(for: session)
+            return completed
+        }
+        WidgetSnapshot.publish(sessions: widgetSessions, goal: profile.sessionsPerWeek)
     }
 
-    private struct Snapshot: Codable {
+    struct Snapshot: Codable {
         let profile: CoachProfile
         let preferences: CoachPreferences
         let sessions: [WorkoutSession]
         let hasOnboarded: Bool
+        let workoutLogs: [UUID: WorkoutLog]?
     }
 }
 
@@ -363,7 +399,8 @@ enum WorkoutPlan {
                             date: start,
                             durationMinutes: minutes,
                             focus: kind.focus,
-                            exercises: kind.exercises(for: profile, minutes: minutes)
+                            exercises: kind.exercises(for: profile, minutes: minutes),
+                            equipment: profile.equipment
                         )
                     )
                     lastUsedOffset = offset

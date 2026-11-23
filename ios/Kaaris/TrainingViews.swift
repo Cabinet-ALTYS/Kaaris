@@ -122,8 +122,10 @@ struct PlanScreen: View {
     @EnvironmentObject private var store: CoachStore
     @State private var showNewPlan = false
 
-    private var planned: [WorkoutSession] {
-        store.sessions.filter { Calendar.current.isDate($0.date, equalTo: .now, toGranularity: .weekOfYear) }
+    private var completedThisWeek: Int {
+        store.completedSessions.filter {
+            Calendar.current.isDate(store.completionDate(for: $0), equalTo: .now, toGranularity: .weekOfYear)
+        }.count
     }
 
     var body: some View {
@@ -147,11 +149,17 @@ struct PlanScreen: View {
             VStack(alignment: .leading, spacing: 10) {
                 SectionLabel(text: "CETTE SEMAINE")
                 HStack(alignment: .firstTextBaseline) {
-                    Text("\(planned.filter { $0.status == .completed }.count)/\(store.profile.sessionsPerWeek)")
+                    Text("\(completedThisWeek)/\(store.profile.sessionsPerWeek)")
                         .font(.system(size: 38, weight: .black, design: .monospaced))
                     Text("séances terminées").font(.subheadline).foregroundStyle(muted)
                 }
-                ProgressView(value: Double(min(planned.filter { $0.status == .completed }.count, store.profile.sessionsPerWeek)), total: Double(max(1, store.profile.sessionsPerWeek)))
+                ProgressView(value: Double(min(completedThisWeek, store.profile.sessionsPerWeek)), total: Double(max(1, store.profile.sessionsPerWeek)))
+                NavigationLink {
+                    WorkoutHistoryScreen()
+                } label: {
+                    Label("Bilan et historique", systemImage: "chart.line.uptrend.xyaxis")
+                }
+                .buttonStyle(ActionStyle(filled: false))
             }
             .kPanel()
 
@@ -285,6 +293,17 @@ struct WorkoutDetail: View {
                     Label(session.status.rawValue, systemImage: session.status == .completed ? "checkmark.circle" : "forward.end")
                         .foregroundStyle(acid)
                 }
+                let log = store.workoutLogs[session.id]
+                if let log {
+                    Text("Réalisée le \(log.performedAt.formatted(.dateTime.day().month(.abbreviated).year())) · \(hourLabel(log.performedAt))")
+                        .font(.subheadline).foregroundStyle(muted)
+                }
+                NavigationLink {
+                    WorkoutLogEditor(session: session, log: log)
+                } label: {
+                    Label(log == nil ? "Renseigner ma séance" : "Modifier le journal", systemImage: "pencil.line")
+                }
+                .buttonStyle(ActionStyle(filled: false))
             } else {
                 Text("Séance indisponible.")
             }

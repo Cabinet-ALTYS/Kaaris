@@ -1,3 +1,4 @@
+import AVKit
 import SwiftUI
 
 struct ExerciseGuide {
@@ -245,6 +246,7 @@ struct ExerciseGuide {
 
 struct ExerciseGuideScreen: View {
     let exercise: WorkoutExercise
+    @State private var restEndsAt: Date?
 
     var body: some View {
         KPage {
@@ -256,8 +258,15 @@ struct ExerciseGuideScreen: View {
                     .font(.subheadline)
                     .foregroundStyle(muted)
             }
+            if exercise.restSeconds > 0 {
+                restTimer
+            }
             if let guide = ExerciseGuide.find(exercise.name) {
-                ExerciseMotionView(motion: guide.motion, equipment: guide.equipment)
+                if let film = ExerciseFilm.url(for: exercise) {
+                    ExerciseFilm(url: film)
+                } else {
+                    ExerciseMotionView(motion: guide.motion, equipment: guide.equipment)
+                }
                 VStack(alignment: .leading, spacing: 16) {
                     instruction("Installation", guide.setup)
                     instruction("Mouvement", guide.action)
@@ -283,10 +292,75 @@ struct ExerciseGuideScreen: View {
         .toolbar(.visible, for: .navigationBar)
     }
 
+    private var restTimer: some View {
+        TimelineView(.periodic(from: .now, by: 1)) { context in
+            let remaining = max(0, Int(ceil(restEndsAt?.timeIntervalSince(context.date) ?? 0)))
+            let active = remaining > 0 && restEndsAt != nil
+            VStack(alignment: .leading, spacing: 8) {
+                if active {
+                    let minutes = remaining / 60
+                    let seconds = remaining % 60
+                    Text("\(minutes):\(seconds.formatted(.number.precision(.integerLength(2))))")
+                        .font(.title2.weight(.bold).monospacedDigit())
+                        .accessibilityLabel("Repos restant")
+                        .accessibilityValue("\(remaining) secondes")
+                    Button("Arrêter le repos") { restEndsAt = nil }
+                        .buttonStyle(ActionStyle(filled: false))
+                } else {
+                    if restEndsAt != nil {
+                        Text("Repos terminé").font(.subheadline.weight(.semibold))
+                    }
+                    Button {
+                        restEndsAt = .now.addingTimeInterval(Double(exercise.restSeconds))
+                    } label: {
+                        Label("Démarrer le repos · \(exercise.restSeconds) s", systemImage: "timer")
+                    }
+                    .buttonStyle(ActionStyle(filled: false))
+                }
+            }
+        }
+    }
+
     private func instruction(_ title: String, _ text: String) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(title).font(.headline).accessibilityAddTraits(.isHeader)
             Text(text).foregroundStyle(muted)
+        }
+    }
+}
+
+private struct ExerciseFilm: View {
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var player: AVPlayer?
+    let url: URL
+
+    static func url(for exercise: WorkoutExercise) -> URL? {
+        guard exercise.name == "Squat au poids du corps" else { return nil }
+        let name = "kaaris-squat-guide"
+        return Bundle.main.url(forResource: name, withExtension: "mp4", subdirectory: "ExerciseVideos")
+            ?? Bundle.main.url(forResource: name, withExtension: "mp4")
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionLabel(text: "DÉMONSTRATION FILMÉE")
+            VideoPlayer(player: player)
+                .aspectRatio(1280.0 / 900.0, contentMode: .fit)
+                .background(.black, in: RoundedRectangle(cornerRadius: 12))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            if let source = URL(string: "https://mixkit.co/free-stock-video/woman-and-man-doing-squats-together-in-a-gym-44438/") {
+                Link("Images Mixkit · voix Bellami", destination: source)
+                    .font(.footnote).foregroundStyle(muted)
+            }
+        }
+        .kPanel()
+        .task { player = AVPlayer(url: url) }
+        .onChange(of: scenePhase) { _, phase in
+            if phase != .active { player?.pause() }
+        }
+        .onDisappear {
+            player?.pause()
+            player = nil
         }
     }
 }

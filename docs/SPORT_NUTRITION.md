@@ -1,6 +1,6 @@
 # KAARIS — Entraînement, nutrition et suivi des habitudes
 
-Recherche mise à jour le 20 novembre 2026. Périmètre de la bêta iOS pour adultes. Les modèles ci-dessous servent à programmer des séances et à rédiger les fiches du coach.
+Recherche mise à jour le 23 novembre 2026. Périmètre de la bêta iOS pour adultes. Les modèles ci-dessous servent à programmer des séances et à rédiger les fiches du coach. Le [catalogue iOS](../ios/Kaaris/Knowledge/kaaris-knowledge.json) réunit 18 fiches dans les catégories Musculation, Macronutriments, Micronutriments, Récupération et Objectifs.
 
 ## 1. Repères scientifiques
 
@@ -104,6 +104,32 @@ Sur la fiche, montrer l’objectif prioritaire, le matériel, le temps prévu, l
 
 Dans l’app, proposer une seule action nutritionnelle à choisir par semaine, par exemple préparer deux repas faciles, prévoir une gourde ou ajouter une source de protéines à un repas régulier. Le bilan peut demander « Ça tient dans ta semaine ? ». L’utilisateur peut ignorer les cartes nutrition et garder le programme sportif.
 
+### Glucides, lipides et fibres
+
+| Nutriment | Repère applicable | Action simple |
+| --- | --- | --- |
+| Glucides | Ils apportent de l’énergie à l’effort. L’OMS recommande de privilégier céréales complètes, légumes, fruits et légumineuses. Les stratégies quantifiées de récupération en glucides concernent notamment l’effort prolongé et les entraînements rapprochés. [OMS, glucides 2023](https://www.who.int/publications/i/item/9789240073593), [Thomas, Erdman et Burke, 2016](https://pubmed.ncbi.nlm.nih.gov/26920240/) | Ajouter une portion de féculents que tu digères bien au repas qui suit une séance. |
+| Lipides | Prévoir des sources de graisses insaturées. Les huiles de colza, d’olive et de noix, les fruits à coque et les poissons s’intègrent à cette démarche. [OMS, alimentation saine 2026](https://www.who.int/news-room/fact-sheets/detail/healthy-diet), [Santé publique France, recommandations adultes](https://www.mangerbouger.fr/manger-mieux/a-tout-age-et-a-chaque-etape-de-la-vie/les-recommandations-alimentaires-pour-les-adultes) | Ajouter une vinaigrette à l’huile de colza ou d’olive à un repas habituel. |
+| Fibres | L’OMS conseille au moins 25 g/j de fibres présentes naturellement et 400 g/j de fruits et légumes chez l’adulte. Augmenter progressivement si les apports sont faibles et boire régulièrement. [OMS, glucides et fibres 2023](https://www.who.int/publications/i/item/9789240073593), [NIDDK, fibres et eau](https://www.niddk.nih.gov/health-information/digestive-diseases/constipation/eating-diet-nutrition) | Ajouter un fruit entier ou une portion de légumes secs à un repas habituel. |
+
+### Micronutriments
+
+Les chiffres sont des références populationnelles pour adultes en bonne santé. L’Anses distingue la référence nutritionnelle pour une population et l’apport satisfaisant estimé lorsque les données disponibles demandent une autre méthode. Les conseils personnalisés dépendent notamment de l’âge, de l’alimentation, de l’état de santé et des traitements. Les fiches expliquent les options alimentaires sans calculer de supplément ni chercher une carence.
+
+| Nutriment | Repère Anses pour l’adulte | Sources et point de vigilance |
+| --- | --- | --- |
+| Fer | Référence de 11 mg/j chez l’homme adulte, la femme ménopausée et la femme adulte aux pertes menstruelles faibles à modérées. Référence de 16 mg/j en cas de pertes élevées. | Viandes, poissons, légumes secs, céréales et noix. La vitamine C peut favoriser l’absorption du fer non héminique. Un symptôme persistant appelle un avis professionnel. [Anses, fer](https://www.anses.fr/fr/article/references-nutritionnelles-vitamines-mineraux), [NIH ODS, fer](https://ods.od.nih.gov/factsheets/iron-HealthProfessional/) |
+| Calcium | Référence de 1 000 mg/j de 18 à 24 ans, puis 950 mg/j à partir de 25 ans. | Laitages, certains légumes verts, légumes secs, eaux calciques ou produits enrichis. Comparer le calcium déclaré sur les boissons végétales. [Anses, calcium](https://www.anses.fr/fr/article/references-nutritionnelles-vitamines-mineraux), [Anses, repères végétariens 2025](https://www.anses.fr/fr/actualite/regimes-vegetariens-effets-sante-reperes-alimentaires) |
+| Vitamine D | Apport alimentaire satisfaisant de 15 µg/j. | Poissons gras et jaunes d’œufs. La synthèse cutanée varie notamment avec la saison et la latitude. Renvoyer vers un professionnel pour une évaluation et une éventuelle supplémentation. [Anses, vitamine D](https://www.anses.fr/fr/article/references-nutritionnelles-vitamines-mineraux) |
+| Vitamine B12 | Apport satisfaisant de 4 µg/j. | Poissons, viandes, œufs, laitages et aliments enrichis. Une alimentation entièrement végétalienne demande de planifier une source fiable avec un professionnel. [Anses, vitamine B12](https://www.anses.fr/fr/article/references-nutritionnelles-vitamines-mineraux), [Anses, repères végétariens 2025](https://www.anses.fr/fr/actualite/regimes-vegetariens-effets-sante-reperes-alimentaires) |
+| Iode | Apport satisfaisant de 150 µg/j. | Produits de la mer, œufs, certains laitages et sel iodé employé avec modération. Les teneurs des algues varient fortement. Les troubles thyroïdiens appellent un avis avant une consommation régulière. [Anses, iode](https://www.anses.fr/fr/article/references-nutritionnelles-vitamines-mineraux), [Anses, algues et risque d’excès d’iode](https://www.anses.fr/fr/system/files?file=NUT2017SA0086.pdf) |
+
+### Hydratation et récupération
+
+- **Eau.** L’EFSA retient environ 2 L/j pour les femmes adultes et 2,5 L/j pour les hommes adultes en conditions tempérées et d’activité modérée, aliments et boissons compris. En séance, rendre l’eau accessible et tenir compte de l’effort, de la chaleur et des pauses. Éviter de convertir la valeur totale en bouteilles à boire. [EFSA, références d’apport en eau 2010](https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2010.1459), [ACSM, hydratation et électrolytes](https://acsm.org/9-facts-about-hydration-electrolytes/).
+- **Sommeil.** Le consensus AASM et SRS recommande au moins 7 h régulières par nuit chez l’adulte de 18 à 60 ans. Proposer dans l’app une heure de lever relativement régulière, du temps pour dormir et une séance plus facile quand une mauvaise nuit perturbe le mouvement. [Watson et al., consensus AASM et SRS 2015](https://pubmed.ncbi.nlm.nih.gov/26039963/).
+- **Charge d’entraînement.** Le coach peut proposer d’enlever une série, baisser la charge, faire une activité facile ou déplacer la séance quand la fatigue perturbe l’exécution. Après une interruption, reprendre graduellement. Un signal d’alerte mérite une consigne d’arrêt et une orientation adaptée. [ACSM, synthèse 2026](https://pubmed.ncbi.nlm.nih.gov/41843416/), [HAS, activité physique et sécurité](https://www.has-sante.fr/jcms/c_2876894/fr/guide-de-promotion-consultation-et-prescription-medicale-d-activite-physique-et-sportive-pour-la-sante-chez-les-adultes), [Assurance Maladie, douleur thoracique urgente](https://www.ameli.fr/assure/sante/themes/douleur-thoracique/reconnaitre-agit-urgence).
+
 ## 4. Règles de publication et tests
 
 - Versionner les exercices et fiches avec leur source, leur public, leur date de vérification et leur texte. Chaque version de plan identifie le modèle utilisé. Le moteur applique les règles de progression et le ton choisi avant l’affichage d’une suggestion.
@@ -119,4 +145,8 @@ Dans le détail d’une séance, toucher un exercice ouvre sa fiche. L’install
 
 Les schémas sont des silhouettes dessinées pour illustrer la trajectoire. Par exemple, la fiche « Vélo ou tapis » montre la marche sur tapis et explique aussi le réglage du vélo. Le dessin et les instructions devront être relus avant diffusion publique par une personne qualifiée, notamment les amplitudes, les appuis et les équipements. [ACE, bibliothèque d’exercices](https://www.acefitness.org/resources/everyone/exercise-library/), [ACE, presse à cuisses](https://www.acefitness.org/resources/everyone/exercise-library/154/seated-leg-press/), [ACE, gainage](https://www.acefitness.org/resources/everyone/exercise-library/32/front-plank/), [ACE, pont fessier](https://www.acefitness.org/resources/everyone/exercise-library/49/glute-bridge/).
 
-Perplexity Search a servi à repérer les publications lors de deux recherches le 20 novembre 2026. Les conclusions ci-dessus s’appuient sur les publications et recommandations consultées. [Perplexity Search API](https://docs.perplexity.ai/docs/search/quickstart).
+## 6. Sources et révision du catalogue
+
+Perplexity Search a servi à repérer les publications lors de deux recherches le 20 novembre 2026, puis de quatre recherches ciblées le 23 novembre 2026. Les quatre recherches ont répondu HTTP 200 et renvoyé 40 entrées brutes sur les macronutriments, les micronutriments, l’hydratation et la récupération, et le sport et les objectifs. Les sources retenues sont les publications d’origine et les recommandations officielles consultées. [Perplexity Search API](https://docs.perplexity.ai/docs/search/quickstart).
+
+Le JSON garde un identifiant stable par fiche, une date de revue, des sections courtes et leurs références HTTPS. Revoir les chiffres avec la source d’origine avant de mettre à jour une fiche. Conserver la date des recommandations, le groupe auquel elles s’appliquent et la nature du chiffre. Pour les conseils à tester, préciser s’il s’agit d’un réglage KAARIS, d’une référence populationnelle ou du résultat d’une étude.

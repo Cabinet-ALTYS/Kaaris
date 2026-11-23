@@ -1,8 +1,10 @@
 # Confidentialité de KAARIS
 
-20 novembre 2026 · Bêta iPhone.
+23 novembre 2026 · Bêta iPhone.
 
 KAARIS utilise ton profil et tes objectifs pour proposer un programme sportif. La taille, le poids, les habitudes et le temps d’écran déclaré sont facultatifs. Le profil, les séances, les réponses de pointage et les réglages sont enregistrés sur l’appareil. La bêta sans compte fonctionne sans transmettre ces éléments à un serveur.
+
+Le journal des séries, charges et dates réalisées reste sur l’appareil. Les indicateurs de progression utilisent uniquement ces données locales. Les fiches de référence et la vidéo embarquée sont consultables hors ligne. Un lien de source ouvre le site de l’éditeur à ta demande.
 
 Les rappels sont programmés par iOS. Si tu choisis d’afficher le langage cru dans les notifications, le texte peut apparaître sur l’écran verrouillé. Tu peux désactiver ce réglage, mettre les rappels en pause ou retirer l’autorisation dans iOS.
 

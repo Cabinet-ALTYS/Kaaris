@@ -1,0 +1,272 @@
+{
+  "version": 1,
+  "reviewedOn": "2026-11-23",
+  "articles": [
+    {
+      "id": "plan-semaine",
+      "title": "Construire sa semaine",
+      "category": "Musculation",
+      "summary": "Pars de tes créneaux réels et répartis le renforcement et les jours faciles.",
+      "sections": [
+        {"title": "Commencer", "text": "Pour une reprise, KAARIS propose deux séances de renforcement du corps entier, espacées autant que le permet ton agenda. Tu peux répartir les mouvements sur davantage de jours quand cette routine tient."},
+        {"title": "Répartir l’effort", "text": "Choisir jusqu’à six créneaux te permet d’ajouter de la marche, du cardio modéré ou de la mobilité. Répartis le travail des groupes musculaires sur la semaine et garde de la marge pour récupérer."},
+        {"title": "Reprendre après un report", "text": "Reprogramme sur un créneau réaliste ou reprends au prochain jour prévu. Garde les séances faciles si la fatigue s’accumule."}
+      ],
+      "sources": [
+        {"title": "ACSM, recommandations de renforcement (2026)", "url": "https://acsm.org/resistance-training-guidelines-update-2026/"},
+        {"title": "Ramos-Campo et al., corps entier et séances par groupes (2024)", "url": "https://pubmed.ncbi.nlm.nih.gov/38595233/"}
+      ]
+    },
+    {
+      "id": "progression-musculation",
+      "title": "Progresser en musculation",
+      "category": "Musculation",
+      "summary": "Fais progresser tes répétitions ou ta charge en gardant un geste régulier.",
+      "sections": [
+        {"title": "Régler l’effort", "text": "Pour démarrer, choisis une charge qui te laisse environ deux ou trois répétitions possibles. Cette marge proposée par KAARIS sert à apprendre le mouvement. L’échec musculaire est facultatif."},
+        {"title": "Monter par paliers", "text": "Quand tu atteins le haut de la fourchette sur deux séances comparables avec un mouvement maîtrisé, essaie le plus petit palier de charge disponible et repars du bas de la fourchette. C’est une règle pratique de KAARIS."},
+        {"title": "Adapter à ton objectif", "text": "Pour la force, les charges plus lourdes ont un intérêt une fois le geste maîtrisé. Pour la prise de muscle, augmente progressivement le volume de séries que tu récupères bien."}
+      ],
+      "sources": [
+        {"title": "ACSM, revue des recommandations de renforcement (2026)", "url": "https://pubmed.ncbi.nlm.nih.gov/41843416/"},
+        {"title": "Robinson et al., proximité de l’échec et adaptations (2024)", "url": "https://pubmed.ncbi.nlm.nih.gov/38970765/"},
+        {"title": "Pelland et al., fréquence et volume (2025, publication en ligne)", "url": "https://pubmed.ncbi.nlm.nih.gov/41343037/"}
+      ]
+    },
+    {
+      "id": "cardio",
+      "title": "Ajouter du cardio",
+      "category": "Musculation",
+      "summary": "Marche rapide, vélo ou autre activité que tu peux refaire avec plaisir.",
+      "sections": [
+        {"title": "Trouver l’allure", "text": "Commence à une allure où tu peux encore parler en phrases. Si tu reprends, augmente d’abord la durée que tu arrives à tenir régulièrement."},
+        {"title": "Repères de l’OMS", "text": "Chez l’adulte de 18 à 64 ans, l’OMS recommande 150 à 300 minutes d’aérobie modérée ou 75 à 150 minutes d’aérobie soutenue par semaine, ou une combinaison équivalente. Elle recommande aussi le renforcement des principaux groupes musculaires au moins deux jours par semaine."},
+        {"title": "Dans ton programme", "text": "Place tes activités faciles autour des séances exigeantes. Tu peux commencer en dessous des repères et prendre aussi les déplacements actifs en compte."}
+      ],
+      "sources": [
+        {"title": "OMS, activité physique et sédentarité (2020)", "url": "https://www.who.int/publications/i/item/9789240015128/"},
+        {"title": "CDC, mesurer l’intensité avec le test de la parole (2025)", "url": "https://www.cdc.gov/physical-activity-basics/measuring/index.html"}
+      ]
+    },
+    {
+      "id": "proteines",
+      "title": "Les protéines",
+      "category": "Macronutriments",
+      "summary": "Elles apportent des acides aminés pour renouveler les tissus et soutenir l’adaptation à l’entraînement.",
+      "sections": [
+        {"title": "Dans l’assiette", "text": "Alterne œufs, poissons, laitages, tofu et légumes secs selon tes préférences. Ajoute une source que tu apprécies à un repas habituel."},
+        {"title": "Deux repères", "text": "L’Anses donne une référence de 0,83 g par kg et par jour pour l’adulte sain. En musculation, une méta-analyse situe autour de 1,6 g par kg et par jour l’apport total au-delà duquel elle n’observe plus de gain moyen supplémentaire de masse maigre. C’est une estimation de groupe, avec une incertitude individuelle."},
+        {"title": "Tes besoins", "text": "Les aliments peuvent couvrir l’apport. Si tu as une consigne médicale sur les protéines, utilise le repère donné par le professionnel qui te suit."}
+      ],
+      "sources": [
+        {"title": "Anses, fonctions et références des protéines", "url": "https://www.anses.fr/fr/article/proteines-role-sources-et-apports-recommandes"},
+        {"title": "Morton et al., apport protéique et entraînement (2018)", "url": "https://pubmed.ncbi.nlm.nih.gov/28698222/"}
+      ]
+    },
+    {
+      "id": "glucides",
+      "title": "Les glucides",
+      "category": "Macronutriments",
+      "summary": "Ils fournissent de l’énergie et aident à reconstituer les réserves utilisées à l’effort.",
+      "sections": [
+        {"title": "Les sources du quotidien", "text": "Pain complet, avoine, riz, pommes de terre, fruits et légumes secs apportent des glucides. L’OMS privilégie les céréales complètes, les légumes, les fruits entiers et les légumineuses."},
+        {"title": "Autour d’une séance", "text": "Si tu as faim, choisis un aliment que tu digères bien, par exemple un fruit ou du pain. Après la séance, retrouve un repas habituel avec un féculent selon ton appétit, des légumes et une source de protéines."},
+        {"title": "Dans une routine", "text": "Varie les féculents et ajuste les portions à ton activité, ta faim et ton confort digestif. Les sorties longues ou séances très rapprochées demandent une stratégie spécifique."}
+      ],
+      "sources": [
+        {"title": "OMS, recommandations sur les glucides (2023)", "url": "https://www.who.int/publications/i/item/9789240073593"},
+        {"title": "Thomas, Erdman et Burke, nutrition et performance (2016)", "url": "https://pubmed.ncbi.nlm.nih.gov/26920240/"}
+      ]
+    },
+    {
+      "id": "lipides",
+      "title": "Les lipides",
+      "category": "Macronutriments",
+      "summary": "Les graisses apportent de l’énergie, des acides gras essentiels et aident à absorber certaines vitamines.",
+      "sections": [
+        {"title": "Faire de la place aux graisses insaturées", "text": "Choisis régulièrement de l’huile de colza, d’olive ou de noix, des fruits à coque non salés et, si tu en manges, du poisson."},
+        {"title": "Un changement facile", "text": "Dans un repas que tu fais souvent, essaie une vinaigrette à l’huile de colza ou d’olive. L’OMS recommande de privilégier les graisses insaturées et de limiter les graisses saturées et trans."}
+      ],
+      "sources": [
+        {"title": "OMS, alimentation saine (2026)", "url": "https://www.who.int/news-room/fact-sheets/detail/healthy-diet"},
+        {"title": "Santé publique France, repères alimentaires adultes (2019)", "url": "https://www.santepubliquefrance.fr/index.php/nutrition-et-activite-physique/rapportsynthese/recommandations-relatives-a-lalimentation-a-lactivite-physique-et-a-la-sedentarite-pour-les-adultes"}
+      ]
+    },
+    {
+      "id": "fibres",
+      "title": "Les fibres",
+      "category": "Macronutriments",
+      "summary": "Légumes secs, céréales complètes, fruits et légumes soutiennent la diversité des apports en fibres.",
+      "sections": [
+        {"title": "Un repère population", "text": "Pour l’adulte, l’OMS recommande au moins 25 g par jour de fibres présentes naturellement dans les aliments, et au moins 400 g de fruits et légumes par jour. Tu peux utiliser ces repères sans peser tes repas."},
+        {"title": "Augmenter progressivement", "text": "Ajoute des lentilles à un repas, choisis du pain complet ou prends un fruit entier. Augmente les fibres progressivement selon ta tolérance et bois régulièrement."}
+      ],
+      "sources": [
+        {"title": "OMS, alimentation saine (2026)", "url": "https://www.who.int/news-room/fact-sheets/detail/healthy-diet"},
+        {"title": "OMS, recommandations sur les glucides et les fibres (2023)", "url": "https://www.who.int/publications/i/item/9789240073593"},
+        {"title": "NIDDK, augmenter progressivement les fibres", "url": "https://www.niddk.nih.gov/health-information/digestive-diseases/constipation/eating-diet-nutrition"}
+      ]
+    },
+    {
+      "id": "assiette-sportive",
+      "title": "Composer un repas de sport",
+      "category": "Macronutriments",
+      "summary": "Pars d’un repas quotidien que tu aimes et que tu peux préparer facilement.",
+      "sections": [
+        {"title": "Une base adaptable", "text": "Associe des légumes ou un fruit, une source de protéines et un féculent selon ton appétit. Ajoute une matière grasse que tu apprécies et garde de l’eau à portée."},
+        {"title": "Idées rapides", "text": "Riz, tofu et légumes sautés. Omelette, pain complet et salade. Semoule, pois chiches et légumes rôtis. Garde des ingrédients courants pour les jours chargés."},
+        {"title": "Ton action de la semaine", "text": "Choisis deux repas faciles à refaire ou prépare ta gourde avant de partir. Garde ce qui te convient au prochain bilan."}
+      ],
+      "sources": [
+        {"title": "Santé publique France, repères alimentaires adultes (2019)", "url": "https://www.santepubliquefrance.fr/index.php/nutrition-et-activite-physique/rapportsynthese/recommandations-relatives-a-lalimentation-a-lactivite-physique-et-a-la-sedentarite-pour-les-adultes"},
+        {"title": "Thomas, Erdman et Burke, nutrition et performance (2016)", "url": "https://pubmed.ncbi.nlm.nih.gov/26920240/"}
+      ]
+    },
+    {
+      "id": "fer",
+      "title": "Le fer",
+      "category": "Micronutriments",
+      "summary": "Le fer participe au transport de l’oxygène.",
+      "sections": [
+        {"title": "Où le trouver", "text": "Viandes, poissons, fruits de mer, légumineuses, noix et céréales en apportent. Un fruit ou un légume riche en vitamine C peut accompagner une source de fer végétale."},
+        {"title": "Un repère qui varie", "text": "L’Anses donne 11 mg par jour chez l’homme adulte, la femme ménopausée et la femme adulte dont les pertes menstruelles sont faibles à modérées. La référence est de 16 mg par jour si les pertes menstruelles sont élevées."},
+        {"title": "Si une question se pose", "text": "En cas de difficulté à couvrir tes apports ou de symptômes persistants, demande un avis médical avant de prendre du fer."}
+      ],
+      "sources": [
+        {"title": "Anses, références pour le fer et sources alimentaires", "url": "https://www.anses.fr/fr/article/references-nutritionnelles-vitamines-mineraux"},
+        {"title": "NIH ODS, fer et biodisponibilité", "url": "https://ods.od.nih.gov/factsheets/iron-HealthProfessional/"}
+      ]
+    },
+    {
+      "id": "calcium",
+      "title": "Le calcium",
+      "category": "Micronutriments",
+      "summary": "Le calcium contribue à la structure des os et à la contraction des muscles.",
+      "sections": [
+        {"title": "Où le trouver", "text": "Laitages, certains légumes verts, légumineuses, eaux riches en calcium et produits enrichis peuvent contribuer à l’apport. Pour une boisson végétale, lis la teneur en calcium sur l’étiquette."},
+        {"title": "Repères Anses", "text": "La référence est de 1 000 mg par jour entre 18 et 24 ans, puis 950 mg par jour à partir de 25 ans pour la population adulte."}
+      ],
+      "sources": [
+        {"title": "Anses, références pour le calcium et sources alimentaires", "url": "https://www.anses.fr/fr/article/references-nutritionnelles-vitamines-mineraux"},
+        {"title": "Anses, repères pour les régimes végétariens (2025)", "url": "https://www.anses.fr/fr/actualite/regimes-vegetariens-effets-sante-reperes-alimentaires"}
+      ]
+    },
+    {
+      "id": "vitamine-d",
+      "title": "La vitamine D",
+      "category": "Micronutriments",
+      "summary": "Elle contribue à l’absorption du calcium et à la santé des os.",
+      "sections": [
+        {"title": "Où la trouver", "text": "Les poissons gras et les jaunes d’œufs sont parmi les sources alimentaires. La peau peut aussi en produire sous l’effet des UVB. Cette production varie selon les conditions."},
+        {"title": "Repère Anses", "text": "L’apport alimentaire satisfaisant de référence est de 15 µg par jour pour l’adulte. Si tu t’interroges sur un complément, demande un avis professionnel, surtout si tu prends déjà des produits qui en contiennent."}
+      ],
+      "sources": [
+        {"title": "Anses, références pour la vitamine D", "url": "https://www.anses.fr/fr/article/references-nutritionnelles-vitamines-mineraux"}
+      ]
+    },
+    {
+      "id": "vitamine-b12",
+      "title": "La vitamine B12",
+      "category": "Micronutriments",
+      "summary": "La vitamine B12 contribue au fonctionnement du système nerveux et à la formation des globules rouges.",
+      "sections": [
+        {"title": "Où la trouver", "text": "Poissons, viandes, œufs et produits laitiers en apportent. Certains aliments enrichis mentionnent la quantité de B12 sur leur étiquette."},
+        {"title": "Repère et alimentation végétalienne", "text": "L’Anses indique un apport satisfaisant de 4 µg par jour pour l’adulte. Si tu manges exclusivement végétal, parle à un professionnel de la façon d’assurer une source fiable de B12."}
+      ],
+      "sources": [
+        {"title": "Anses, références pour la vitamine B12", "url": "https://www.anses.fr/fr/article/references-nutritionnelles-vitamines-mineraux"},
+        {"title": "Anses, repères pour les régimes végétariens (2025)", "url": "https://www.anses.fr/fr/actualite/regimes-vegetariens-effets-sante-reperes-alimentaires"}
+      ]
+    },
+    {
+      "id": "iode",
+      "title": "L’iode",
+      "category": "Micronutriments",
+      "summary": "L’iode sert à fabriquer les hormones thyroïdiennes.",
+      "sections": [
+        {"title": "Où le trouver", "text": "Poissons marins, fruits de mer, œufs et certains laitages en apportent. Si tu sales déjà tes repas, tu peux choisir un sel iodé en gardant des quantités modestes."},
+        {"title": "Repère et précaution", "text": "L’Anses retient un apport satisfaisant de 150 µg par jour pour l’adulte. Les algues ont des teneurs très variables. En cas de maladie thyroïdienne, demande un avis avant d’en consommer régulièrement ou de prendre un complément iodé."}
+      ],
+      "sources": [
+        {"title": "Anses, références pour l’iode et sources alimentaires", "url": "https://www.anses.fr/fr/article/references-nutritionnelles-vitamines-mineraux"},
+        {"title": "Anses, avis sur l’iode et la consommation d’algues", "url": "https://www.anses.fr/fr/system/files?file=NUT2017SA0086.pdf"}
+      ]
+    },
+    {
+      "id": "hydratation",
+      "title": "Hydratation et entraînement",
+      "category": "Récupération",
+      "summary": "Garde de l’eau à portée et adapte tes prises à la chaleur, à l’effort et à ta soif.",
+      "sections": [
+        {"title": "Avant, pendant, après", "text": "Prévois une gourde pour une séance habituelle. Fais des pauses si tu en as besoin et adapte tes prises à l’effort, à la chaleur et à la transpiration. Évite de te forcer à boire de grands volumes."},
+        {"title": "Ce que compte la référence", "text": "En conditions tempérées et d’activité modérée, l’EFSA estime l’apport adéquat total à environ 2 L par jour pour les femmes et 2,5 L pour les hommes. Cela inclut l’eau des aliments et des boissons."},
+        {"title": "Efforts prolongés", "text": "En forte chaleur ou pour une sortie longue, les besoins changent. Ajuste la durée, les pauses et les boissons aux conditions et à ton expérience."}
+      ],
+      "sources": [
+        {"title": "EFSA, références d’apport en eau (2010)", "url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2010.1459"},
+        {"title": "ACSM, hydratation et électrolytes", "url": "https://acsm.org/9-facts-about-hydration-electrolytes/"}
+      ]
+    },
+    {
+      "id": "sommeil",
+      "title": "Dormir et récupérer",
+      "category": "Récupération",
+      "summary": "Prévois un temps de sommeil régulier et ajuste la séance après une mauvaise nuit.",
+      "sections": [
+        {"title": "Un repère", "text": "Le consensus AASM et SRS recommande de dormir régulièrement au moins sept heures par nuit chez l’adulte de 18 à 60 ans. Le besoin varie selon la personne et le moment."},
+        {"title": "En pratique", "text": "Réserve une heure de lever relativement régulière et assez de temps pour dormir. Si la fatigue gêne le mouvement, garde une séance facile ou reporte l’effort exigeant."}
+      ],
+      "sources": [
+        {"title": "Watson et al., consensus AASM et SRS sur le sommeil adulte (2015)", "url": "https://pubmed.ncbi.nlm.nih.gov/26039963/"}
+      ]
+    },
+    {
+      "id": "recuperation",
+      "title": "Ajuster quand tu récupères mal",
+      "category": "Récupération",
+      "summary": "Ajuste le volume et l’effort si tu accumules la fatigue.",
+      "sections": [
+        {"title": "Choisir une séance possible", "text": "Réduis une série, choisis une charge facile ou remplace par une marche si les mouvements habituels deviennent difficiles à maîtriser. Après une interruption, reprends progressivement."},
+        {"title": "Garder les bases", "text": "Prends des repas réguliers, bois selon tes besoins et laisse des jours faciles entre les efforts exigeants quand c’est utile."},
+        {"title": "Quand arrêter l’effort", "text": "En cas de douleur thoracique, de malaise ou d’essoufflement inhabituel, arrête l’effort. Si le symptôme est grave, soudain ou persiste, contacte les services d’urgence locaux."}
+      ],
+      "sources": [
+        {"title": "ACSM, recommandations de renforcement (2026)", "url": "https://acsm.org/resistance-training-guidelines-update-2026/"},
+        {"title": "HAS, activité physique à des fins de santé chez l’adulte", "url": "https://www.has-sante.fr/jcms/c_2876894/fr/guide-de-promotion-consultation-et-prescription-medicale-d-activite-physique-et-sportive-pour-la-sante-chez-les-adultes"},
+        {"title": "Assurance Maladie, douleur thoracique et signes d’urgence", "url": "https://www.ameli.fr/assure/sante/themes/douleur-thoracique/reconnaitre-agit-urgence"}
+      ]
+    },
+    {
+      "id": "prise-muscle",
+      "title": "Objectif prise de muscle",
+      "category": "Objectifs",
+      "summary": "Combine entraînement régulier, alimentation suffisante et progression graduelle.",
+      "sections": [
+        {"title": "À l’entraînement", "text": "Couvre les principaux groupes musculaires et note les répétitions ou les charges que tu maîtrises. Monte progressivement le volume que tu récupères bien."},
+        {"title": "Dans l’assiette", "text": "Garde des repas réguliers et des sources de protéines variées. Un petit essai chez des pratiquants entraînés suggère qu’une prise de poids plus rapide s’accompagne surtout de plus de graisse."},
+        {"title": "Faire le bilan", "text": "Suis ta régularité et tes progrès sur les mouvements. Si tes apports ou ta récupération te semblent insuffisants, revois ta routine avant d’ajouter de la difficulté."}
+      ],
+      "sources": [
+        {"title": "ACSM, recommandations de renforcement (2026)", "url": "https://acsm.org/resistance-training-guidelines-update-2026/"},
+        {"title": "Morton et al., apport protéique et entraînement (2018)", "url": "https://pubmed.ncbi.nlm.nih.gov/28698222/"},
+        {"title": "Helms et al., surplus énergétique et composition corporelle (2023)", "url": "https://pubmed.ncbi.nlm.nih.gov/37914977/"}
+      ]
+    },
+    {
+      "id": "perte-poids",
+      "title": "Objectif perte de poids",
+      "category": "Objectifs",
+      "summary": "Si cet objectif te convient, cherche une habitude durable et garde le renforcement.",
+      "sections": [
+        {"title": "Comprendre le principe", "text": "Une perte de poids durable suppose des apports moyens inférieurs aux dépenses pendant un temps. Choisis un changement tenable, comme prévoir un repas les jours chargés ou remplacer une boisson sucrée par de l’eau."},
+        {"title": "Préserver ta capacité d’entraînement", "text": "Le renforcement pendant une démarche de perte de poids aide à préserver la masse maigre dans les études menées auprès d’adultes en surpoids ou vivant avec une obésité. Observe aussi ton énergie, ta force et ta régularité."},
+        {"title": "Garder une démarche adaptée", "text": "La pesée dans KAARIS est facultative. En cas de difficulté avec ton rapport à l’alimentation, de restriction médicale ou de grossesse, demande un accompagnement adapté avant de poursuivre un objectif de poids."}
+      ],
+      "sources": [
+        {"title": "NICE NG246, activité physique et alimentation (2025)", "url": "https://www.nice.org.uk/guidance/ng246/chapter/Physical-activity-and-diet"},
+        {"title": "Binmahfoz et al., renforcement et perte de poids (2025)", "url": "https://pubmed.ncbi.nlm.nih.gov/40909191/"},
+        {"title": "HAS, parcours de soins de l’adulte (2024)", "url": "https://has-sante.fr/jcms/p_3408871/fr/guide-du-parcours-de-soins-surpoids-et-obesite-de-l-adulte"}
+      ]
+    }
+  ]
+}
