@@ -6,7 +6,7 @@ Coach sportif gratuit pour iPhone, en français. Choisis un objectif et 2 à 6 s
 
 Ouvrir `ios/Kaaris.xcodeproj`, choisir le schéma **Kaaris** et lancer sur un simulateur iOS 17 ou ultérieur. Ajouter l’argument `--demo` au lancement pour afficher un programme fictif sans connecter de compte. En usage normal, renseigner l’onboarding pour créer son programme.
 
-- Plan par objectif, niveau, matériel et durée. Les 35 fiches d’exercice expliquent le mouvement, la respiration et la progression. Le squat au poids du corps a une démonstration filmée avec Bellami, et les autres fiches conservent les animations.
+- Plan par objectif, niveau, matériel et durée. Les 35 fiches d’exercice expliquent le mouvement, la respiration et la progression. Le squat au poids du corps est démontré par l’avatar KAARIS, avec des repères à l’écran et la voix Bellami. Les autres fiches ont une animation du mouvement.
 - Journal hors ligne avec séries, répétitions ou durée, charge facultative, corrections, bilan hebdomadaire et évolution par exercice.
 - Onglet Repères avec recherche locale et 18 fiches sourcées sur le sport, la nutrition et la récupération.
 - Rappels locaux iOS, notification de test, pause et heures silencieuses. Les réglages affichent les relances en file iOS et leur prochaine échéance. Le langage, la fréquence des relances et la pression sur l’ego se règlent séparément. Un consentement distinct active le ton cru dans les notifications.

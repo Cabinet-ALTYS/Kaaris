@@ -262,8 +262,8 @@ struct ExerciseGuideScreen: View {
                 restTimer
             }
             if let guide = ExerciseGuide.find(exercise.name) {
-                if let film = ExerciseFilm.url(for: exercise) {
-                    ExerciseFilm(url: film)
+                if let film = ExerciseFilmAsset.catalogue[exercise.name], let url = film.resourceURL {
+                    ExerciseFilm(asset: film, url: url)
                 } else {
                     ExerciseMotionView(motion: guide.motion, equipment: guide.equipment)
                 }
@@ -329,27 +329,55 @@ struct ExerciseGuideScreen: View {
     }
 }
 
+private struct ExerciseFilmAsset: Decodable {
+    let resource: String
+    let width: Int
+    let height: Int
+    let credit: String
+    let source: String?
+
+    static let catalogue: [String: Self] = {
+        guard let url = bundledURL("kaaris-exercise-videos", extension: "json"),
+              let data = try? Data(contentsOf: url),
+              let assets = try? JSONDecoder().decode([String: Self].self, from: data) else { return [:] }
+        return assets.filter { _, asset in
+            asset.width > 0 && asset.height > 0
+                && asset.resource.range(of: "^[a-z0-9-]+$", options: .regularExpression) != nil
+        }
+    }()
+
+    var resourceURL: URL? { Self.bundledURL(resource, extension: "mp4") }
+
+    var sourceURL: URL? {
+        guard let source, let url = URL(string: source), url.scheme == "https",
+              url.host != nil, url.user == nil, url.password == nil else { return nil }
+        return url
+    }
+
+    private static func bundledURL(_ name: String, extension ext: String) -> URL? {
+        Bundle.main.url(forResource: name, withExtension: ext, subdirectory: "ExerciseVideos")
+            ?? Bundle.main.url(forResource: name, withExtension: ext)
+    }
+}
+
 private struct ExerciseFilm: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var player: AVPlayer?
+    let asset: ExerciseFilmAsset
     let url: URL
-
-    static func url(for exercise: WorkoutExercise) -> URL? {
-        guard exercise.name == "Squat au poids du corps" else { return nil }
-        let name = "kaaris-squat-guide"
-        return Bundle.main.url(forResource: name, withExtension: "mp4", subdirectory: "ExerciseVideos")
-            ?? Bundle.main.url(forResource: name, withExtension: "mp4")
-    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionLabel(text: "DÉMONSTRATION FILMÉE")
+            SectionLabel(text: "DÉMONSTRATION VIDÉO")
             VideoPlayer(player: player)
-                .aspectRatio(1280.0 / 900.0, contentMode: .fit)
+                .aspectRatio(CGFloat(asset.width) / CGFloat(asset.height), contentMode: .fit)
                 .background(.black, in: RoundedRectangle(cornerRadius: 12))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
-            if let source = URL(string: "https://mixkit.co/free-stock-video/woman-and-man-doing-squats-together-in-a-gym-44438/") {
-                Link("Images Mixkit · voix Bellami", destination: source)
+            if let source = asset.sourceURL {
+                Link(asset.credit, destination: source)
+                    .font(.footnote).foregroundStyle(muted)
+            } else {
+                Text(asset.credit)
                     .font(.footnote).foregroundStyle(muted)
             }
         }
