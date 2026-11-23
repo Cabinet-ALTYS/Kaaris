@@ -262,10 +262,14 @@ struct ExerciseGuideScreen: View {
                 restTimer
             }
             if let guide = ExerciseGuide.find(exercise.name) {
-                if let film = ExerciseFilmAsset.catalogue[exercise.name], let url = film.resourceURL {
+                let media = ExerciseMediaAsset.catalogue[exercise.name]
+                if let film = media?.video, let url = film.url {
                     ExerciseFilm(asset: film, url: url)
                 } else {
                     ExerciseMotionView(motion: guide.motion, equipment: guide.equipment)
+                    if let url = media?.narrationURL {
+                        ExerciseNarration(url: url)
+                    }
                 }
                 VStack(alignment: .leading, spacing: 16) {
                     instruction("Installation", guide.setup)
@@ -329,33 +333,33 @@ struct ExerciseGuideScreen: View {
     }
 }
 
-private struct ExerciseFilmAsset: Decodable {
-    let resource: String
-    let width: Int
-    let height: Int
-    let credit: String
-    let source: String?
+private struct ExerciseMediaAsset: Decodable {
+    struct Video: Decodable {
+        let resource: String
+        let width: Int
+        let height: Int
+
+        var url: URL? {
+            guard width > 0, height > 0 else { return nil }
+            return ExerciseMediaAsset.bundledURL(resource, extension: "mp4")
+        }
+    }
+
+    let video: Video?
+    let narration: String?
 
     static let catalogue: [String: Self] = {
         guard let url = bundledURL("kaaris-exercise-videos", extension: "json"),
               let data = try? Data(contentsOf: url),
               let assets = try? JSONDecoder().decode([String: Self].self, from: data) else { return [:] }
-        return assets.filter { _, asset in
-            asset.width > 0 && asset.height > 0
-                && asset.resource.range(of: "^[a-z0-9-]+$", options: .regularExpression) != nil
-        }
+        return assets
     }()
 
-    var resourceURL: URL? { Self.bundledURL(resource, extension: "mp4") }
-
-    var sourceURL: URL? {
-        guard let source, let url = URL(string: source), url.scheme == "https",
-              url.host != nil, url.user == nil, url.password == nil else { return nil }
-        return url
-    }
+    var narrationURL: URL? { narration.flatMap { Self.bundledURL($0, extension: "mp3") } }
 
     private static func bundledURL(_ name: String, extension ext: String) -> URL? {
-        Bundle.main.url(forResource: name, withExtension: ext, subdirectory: "ExerciseVideos")
+        guard name.range(of: "^[a-z0-9-]+$", options: .regularExpression) != nil else { return nil }
+        return Bundle.main.url(forResource: name, withExtension: ext, subdirectory: "ExerciseVideos")
             ?? Bundle.main.url(forResource: name, withExtension: ext)
     }
 }
@@ -363,7 +367,7 @@ private struct ExerciseFilmAsset: Decodable {
 private struct ExerciseFilm: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var player: AVPlayer?
-    let asset: ExerciseFilmAsset
+    let asset: ExerciseMediaAsset.Video
     let url: URL
 
     var body: some View {
@@ -373,13 +377,8 @@ private struct ExerciseFilm: View {
                 .aspectRatio(CGFloat(asset.width) / CGFloat(asset.height), contentMode: .fit)
                 .background(.black, in: RoundedRectangle(cornerRadius: 12))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
-            if let source = asset.sourceURL {
-                Link(asset.credit, destination: source)
-                    .font(.footnote).foregroundStyle(muted)
-            } else {
-                Text(asset.credit)
-                    .font(.footnote).foregroundStyle(muted)
-            }
+            Text("Avatar généré par IA · voix Bellami")
+                .font(.footnote).foregroundStyle(muted)
         }
         .kPanel()
         .task { player = AVPlayer(url: url) }
@@ -390,6 +389,32 @@ private struct ExerciseFilm: View {
             player?.pause()
             player = nil
         }
+    }
+}
+
+private struct ExerciseNarration: View {
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var player: AVAudioPlayer?
+    let url: URL
+
+    var body: some View {
+        Button {
+            stop()
+            player = try? AVAudioPlayer(contentsOf: url)
+            player?.play()
+        } label: {
+            Label("Écouter la consigne", systemImage: "speaker.wave.2")
+        }
+        .buttonStyle(ActionStyle(filled: false))
+        .onChange(of: scenePhase) { _, phase in
+            if phase != .active { stop() }
+        }
+        .onDisappear(perform: stop)
+    }
+
+    private func stop() {
+        player?.stop()
+        player = nil
     }
 }
 

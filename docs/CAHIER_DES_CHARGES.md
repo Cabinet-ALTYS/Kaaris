@@ -67,6 +67,7 @@ La recette fonctionnelle de la bêta connectée inclut une lecture réelle des d
 
 ### Démonstrations
 
+- Le build 0.2.0 (8) couvre les 35 exercices hors ligne. Seize nouvelles démonstrations validées rejoignent le squat, soit 17 vidéos verticales de 12 secondes avec l’avatar, Bellami et des repères à l’écran. Pour les 18 autres exercices, la fiche associe son animation d’origine à une consigne Bellami. La sélection vidéo tient compte du geste, de la visibilité des appuis et du fonctionnement du matériel.
 - Le build 0.2.0 (7) embarque une répétition complète du squat au poids du corps animée par Higgsfield Seedance 2.5 à partir de l’avatar original. La voix off Bellami et les repères à l’écran suivent les appuis, la descente, le point bas et la remontée. Le catalogue des vidéos locales associe chaque ressource à la fiche et à la variante exactes.
 - Chaque fiche garde des repères écrits pour l’installation, le mouvement, la respiration et les erreurs courantes. Les démonstrations filmées sont courtes, sous-titrées selon le support et cadrées pour garder les articulations utiles et les deux pieds visibles. Bellami décrit ce qui se passe à l’écran. Le contenu doit rester compréhensible sans son.
 - Une démonstration ne remplace la représentation schématique qu’après une vérification du geste, de la correspondance avec la bonne variante, de la lisibilité sur iPhone et des droits de redistribution. Pour un clip généré, vérifier la stabilité du sujet et de la caméra et l’absence de déformation entre départ, effort et retour.

@@ -1,8 +1,175 @@
 {
+  "Bascule du bassin, dos neutre": {
+    "video": {
+      "height": 1280,
+      "resource": "kaaris-bodyweight-hip-hinge",
+      "width": 720
+    }
+  },
+  "Curl biceps avec haltères": {
+    "video": {
+      "height": 1280,
+      "resource": "kaaris-standing-dumbbell-biceps-curl",
+      "width": 720
+    }
+  },
+  "Curl biceps à la poulie": {
+    "video": {
+      "height": 1280,
+      "resource": "kaaris-low-cable-biceps-curl",
+      "width": 720
+    }
+  },
+  "Développé haltères au sol": {
+    "narration": "kaaris-narration-dumbbell-floor-press"
+  },
+  "Développé à la machine": {
+    "narration": "kaaris-narration-machine-chest-press"
+  },
+  "Développé épaules avec haltères": {
+    "video": {
+      "height": 1280,
+      "resource": "kaaris-seated-dumbbell-shoulder-press",
+      "width": 720
+    }
+  },
+  "Développé épaules à la machine": {
+    "narration": "kaaris-narration-machine-shoulder-press"
+  },
+  "Fentes arrière": {
+    "narration": "kaaris-narration-reverse-lunge"
+  },
+  "Fentes arrière avec appui": {
+    "narration": "kaaris-narration-supported-reverse-lunge"
+  },
+  "Fentes arrière avec haltères": {
+    "narration": "kaaris-narration-dumbbell-reverse-lunge"
+  },
+  "Gainage ventral": {
+    "video": {
+      "height": 1280,
+      "resource": "kaaris-forearm-plank",
+      "width": 720
+    }
+  },
+  "Glissés des bras au mur": {
+    "video": {
+      "height": 1280,
+      "resource": "kaaris-wall-arm-slides",
+      "width": 720
+    }
+  },
+  "Goblet squat": {
+    "video": {
+      "height": 1280,
+      "resource": "kaaris-goblet-squat",
+      "width": 720
+    }
+  },
+  "Hip thrust guidé": {
+    "narration": "kaaris-narration-machine-hip-thrust"
+  },
+  "Marche rapide, allure modérée": {
+    "video": {
+      "height": 1280,
+      "resource": "kaaris-moderate-brisk-walking",
+      "width": 720
+    }
+  },
+  "Marche, allure facile": {
+    "video": {
+      "height": 1280,
+      "resource": "kaaris-easy-walking",
+      "width": 720
+    }
+  },
+  "Mobilité douce des hanches et des épaules": {
+    "narration": "kaaris-narration-gentle-hip-and-shoulder-mobility"
+  },
+  "Mollets debout": {
+    "narration": "kaaris-narration-standing-calf-raise"
+  },
+  "Mollets debout avec appui": {
+    "video": {
+      "height": 1280,
+      "resource": "kaaris-supported-calf-raise",
+      "width": 720
+    }
+  },
+  "Mollets debout avec haltères": {
+    "narration": "kaaris-narration-dumbbell-calf-raise"
+  },
+  "Pompes au mur, prise serrée": {
+    "video": {
+      "height": 1280,
+      "resource": "kaaris-close-grip-wall-push-up",
+      "width": 720
+    }
+  },
+  "Pompes inclinées": {
+    "narration": "kaaris-narration-incline-push-up"
+  },
+  "Pont fessier au sol": {
+    "video": {
+      "height": 1280,
+      "resource": "kaaris-floor-glute-bridge",
+      "width": 720
+    }
+  },
+  "Pont fessier avec haltère": {
+    "narration": "kaaris-narration-dumbbell-glute-bridge"
+  },
+  "Presse à cuisses": {
+    "narration": "kaaris-narration-leg-press"
+  },
+  "Pull-over haltère au sol": {
+    "narration": "kaaris-narration-dumbbell-floor-pullover"
+  },
+  "Retour au calme, allure facile": {
+    "video": {
+      "height": 1280,
+      "resource": "kaaris-easy-cooldown-walk",
+      "width": 720
+    }
+  },
+  "Rowing haltère unilatéral": {
+    "video": {
+      "height": 1280,
+      "resource": "kaaris-single-arm-dumbbell-row",
+      "width": 720
+    }
+  },
+  "Soulevé de terre roumain avec haltères": {
+    "narration": "kaaris-narration-dumbbell-romanian-deadlift"
+  },
   "Squat au poids du corps": {
-    "resource": "kaaris-squat-guide",
-    "width": 720,
-    "height": 1280,
-    "credit": "Avatar généré par IA · voix Bellami"
+    "video": {
+      "height": 1280,
+      "resource": "kaaris-squat-guide",
+      "width": 720
+    }
+  },
+  "Tirage des coudes au sol": {
+    "narration": "kaaris-narration-prone-elbow-row"
+  },
+  "Tirage horizontal assis": {
+    "video": {
+      "height": 1280,
+      "resource": "kaaris-seated-cable-row",
+      "width": 720
+    }
+  },
+  "Tirage vertical poitrine": {
+    "narration": "kaaris-narration-lat-pulldown"
+  },
+  "Vélo ou tapis, allure modérée": {
+    "video": {
+      "height": 1280,
+      "resource": "kaaris-moderate-bike-or-treadmill",
+      "width": 720
+    }
+  },
+  "Y-T-W au sol": {
+    "narration": "kaaris-narration-prone-ytw"
   }
 }
