@@ -65,8 +65,14 @@ La recette fonctionnelle de la bêta connectée inclut une lecture réelle des d
 4. À partir de la fiche d’exercice, lancer ou annuler le repos prescrit. Le décompte se cale sur une échéance absolue pour récupérer le temps écoulé lorsque l’app est suspendue.
 5. Pour les prochains lots, proposer un ajustement hebdomadaire à partir de l’assiduité, des séries et des indisponibilités. Présenter le motif, la nouvelle fréquence ou la variation proposée et demander confirmation avant de changer le plan. Les variations de poids et de tour de taille restent facultatives et séparées de la progression de force.
 
+### Adaptation locale et programme de cinq séances
+
+- Dans Plan, le programme pectoraux et bras propose cinq séances sur sept jours avec deux jours de repos. Il prévoit deux séances pectoraux et triceps, deux biceps dont une avec le dos, et une séance jambes et abdos. Le programme utilise le matériel de la salle ou des haltères. Une fois actif, il prépare deux semaines et renouvelle les créneaux à l’ouverture de l’app. Les exercices terminés et le journal restent conservés.
+- Le coach d’une séance prend une demande dictée en français ou écrite. Il propose une adaptation de la durée, du matériel, du type de séance, de l’effort ou d’un exercice. L’utilisateur peut affiner la proposition et doit l’appliquer pour modifier le plan. La validation protège les créneaux, les séances terminées et les propositions devenues obsolètes. La voix de réponse variable est fournie par iOS.
+
 ### Démonstrations
 
+- Le build 0.2.0 (9) embarque les 35 vidéos dans une bibliothèque consultable dans Plan et depuis chaque ligne d’exercice. Les 17 vidéos de l’avatar et les 18 schémas animés sont identifiés dans le lecteur plein écran. Les deux formats intègrent la consigne Bellami et fonctionnent hors ligne.
 - Le build 0.2.0 (8) couvre les 35 exercices hors ligne. Seize nouvelles démonstrations validées rejoignent le squat, soit 17 vidéos verticales de 12 secondes avec l’avatar, Bellami et des repères à l’écran. Pour les 18 autres exercices, la fiche associe son animation d’origine à une consigne Bellami. La sélection vidéo tient compte du geste, de la visibilité des appuis et du fonctionnement du matériel.
 - Le build 0.2.0 (7) embarque une répétition complète du squat au poids du corps animée par Higgsfield Seedance 2.5 à partir de l’avatar original. La voix off Bellami et les repères à l’écran suivent les appuis, la descente, le point bas et la remontée. Le catalogue des vidéos locales associe chaque ressource à la fiche et à la variante exactes.
 - Chaque fiche garde des repères écrits pour l’installation, le mouvement, la respiration et les erreurs courantes. Les démonstrations filmées sont courtes, sous-titrées selon le support et cadrées pour garder les articulations utiles et les deux pieds visibles. Bellami décrit ce qui se passe à l’écran. Le contenu doit rester compréhensible sans son.

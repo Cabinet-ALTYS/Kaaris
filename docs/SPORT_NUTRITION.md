@@ -150,3 +150,36 @@ Les schémas sont des silhouettes dessinées pour illustrer la trajectoire. Par 
 Perplexity Search a servi à repérer les publications lors de deux recherches le 20 novembre 2026, puis de quatre recherches ciblées le 23 novembre 2026. Les quatre recherches ont répondu HTTP 200 et renvoyé 40 entrées brutes sur les macronutriments, les micronutriments, l’hydratation et la récupération, et le sport et les objectifs. Les sources retenues sont les publications d’origine et les recommandations officielles consultées. [Perplexity Search API](https://docs.perplexity.ai/docs/search/quickstart).
 
 Le JSON garde un identifiant stable par fiche, une date de revue, des sections courtes et leurs références HTTPS. Revoir les chiffres avec la source d’origine avant de mettre à jour une fiche. Conserver la date des recommandations, le groupe auquel elles s’appliquent et la nature du chiffre. Pour les conseils à tester, préciser s’il s’agit d’un réglage KAARIS, d’une référence populationnelle ou du résultat d’une étude.
+
+## 7. Push/pull et programme personnalisé sur cinq jours — 24 novembre 2026
+
+### Combiner poussées et tirages
+
+Tu peux mettre un développé et un tirage dans la même séance. Avec un volume comparable, la méta-analyse de Ramos-Campo et al. observe des gains moyens de force et de muscle similaires entre séances corps entier et programmes séparés par groupes. Les études sur la fréquence convergent vers un rôle faible ou incertain de la fréquence seule pour la prise de muscle quand le volume est comparable. Répartir les séries sur plusieurs jours aide à tenir le volume et à garder des séances de durée raisonnable. La semaine personnalisée ci-dessous adapte ces résultats issus de formats voisins. [Ramos-Campo et al., 2024](https://pubmed.ncbi.nlm.nih.gov/38595233/), [Schoenfeld et al., 2019](https://pubmed.ncbi.nlm.nih.gov/30558493/), [Pelland et al., en ligne 2025](https://pubmed.ncbi.nlm.nih.gov/41343037/).
+
+Si la séance est courte, alterner un développé avec un tirage peut faire gagner du temps. Les superséries regroupées dans la méta-analyse de 2025 ont donné des gains moyens similaires à des séries classiques, avec une séance plus courte et un effort perçu plus élevé. Commence en séries classiques si tu découvres les exercices. Utilise l’alternance quand tu peux conserver les répétitions et la technique. [Zhang et al., 2025](https://doi.org/10.1007/s40279-025-02176-8).
+
+### Exemple de semaine et exercices du catalogue
+
+| Jour | Priorité | Salle | Haltères | Poids du corps |
+| --- | --- | --- | --- | --- |
+| Lundi | Pectoraux et triceps A | Développé à la machine | Développé haltères au sol | Pompes inclinées |
+| Mardi | Dos et biceps A | Tirage horizontal assis, Tirage vertical poitrine, Curl biceps à la poulie | Rowing haltère unilatéral, Pull-over haltère au sol, Curl biceps avec haltères | Tirage des coudes au sol, Y-T-W au sol. Un élastique ou des haltères permettent d’ajouter un curl. |
+| Mercredi | Repos ou activité facile | — | — | — |
+| Jeudi | Jambes et abdos | Presse à cuisses, Soulevé de terre roumain avec haltères, Gainage ventral | Goblet squat, Soulevé de terre roumain avec haltères ou Fentes arrière avec haltères, Gainage ventral | Squat au poids du corps, Pont fessier au sol ou Fentes arrière avec appui, Gainage ventral |
+| Vendredi | Pectoraux et triceps B | Développé à la machine, Développé épaules à la machine en option | Développé haltères au sol, Développé épaules avec haltères en option | Pompes inclinées et Pompes au mur, prise serrée |
+| Samedi | Biceps B | Curl biceps à la poulie | Curl biceps avec haltères | Pour des séries biceps directes, utiliser un élastique ou des haltères. Une variante de curl sans matériel reste à documenter. |
+| Dimanche | Repos ou activité facile | — | — | — |
+
+Les développés sollicitent aussi les triceps. Le catalogue salle et haltères peut accueillir ultérieurement une extension triceps dédiée, avec son propre guide. Garde les pompes au mur en prise serrée dans les séances de poussée. Pour les biceps sans matériel, une variante de flexion du coude auto-résistée pourrait être documentée et testée avant d’être intégrée au plan.
+
+### Dosage et récupération
+
+- **Pectoraux.** Commence avec 3 à 4 séries de développé par jour, soit 6 à 8 séries hebdomadaires. Si tu récupères bien et progresses, tu peux te rapprocher d’environ 10 séries hebdomadaires. Ce dernier ordre de grandeur vient de l’ACSM pour la prise de muscle chez l’adulte sain. Les volumes de départ sont des choix de programmation à ajuster. [ACSM, recommandations 2026](https://acsm.org/resistance-training-guidelines-update-2026/).
+- **Biceps.** Commence avec 2 à 3 séries de curl par jour, soit 4 à 6 séries directes hebdomadaires. Les tirages du mardi comptent aussi comme travail indirect. Pour les exercices chargés, teste une plage de 8 à 12 répétitions contrôlées et garde d’abord environ 2 à 3 répétitions possibles. Ajuste une seule variable à la fois. Ces valeurs servent de point de départ pour le programme. [ACSM, recommandations 2026](https://pubmed.ncbi.nlm.nih.gov/41843416/), [Pelland et al., séries directes et indirectes](https://pubmed.ncbi.nlm.nih.gov/41343037/).
+- **Récupération.** Les deux expositions pectoraux et les deux expositions biceps sont éloignées dans cet exemple. Garde le samedi court et réduis les séries au besoin si les coudes ou les avant-bras fatiguent. Le mardi et le samedi suivent une autre séance du haut du corps, alors surveille la qualité des mouvements. Les essais sur des jours consécutifs suggèrent que la répartition peut rester flexible pour des programmes comparables. [Yang et al., 2018](https://doi.org/10.3389/fphys.2018.00725), [Carvalho et Santos, 2018](https://pubmed.ncbi.nlm.nih.gov/27682004/).
+- **Dos et jambes.** Le plan privilégie les bras et les pectoraux. Pour le dos, démarre par 2 à 3 séries de chacun des deux mouvements retenus. Pour les jambes, choisis 2 à 3 séries de chaque mouvement de jambe et ajoute 2 tenues courtes de gainage. Si l’objectif devient plus équilibré, ajoute quelques séries de tirage ou de jambes à un autre créneau selon la récupération. Le repère général ACSM conseille de faire travailler les grands groupes environ deux fois par semaine. [ACSM, recommandations 2026](https://acsm.org/resistance-training-guidelines-update-2026/).
+
+### Recherche Perplexity du 24 novembre
+
+Le service Search a répondu HTTP 200 à trois requêtes avec huit entrées brutes chacune. La recherche push/pull a renvoyé la méta-analyse de Ramos-Campo, celle sur les superséries et un essai aigu sur les séries antagonistes. La recherche volume/fréquence a renvoyé Pelland et la prise de position ACSM, ainsi que des pages d’index PubMed. La recherche récupération a renvoyé les essais sur les jours consécutifs et non consécutifs. La sélection ci-dessus cite les publications directement et laisse les index et les études aiguës hors des conclusions sur la croissance à long terme. [Perplexity Search API](https://docs.perplexity.ai/docs/search/quickstart).

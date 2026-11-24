@@ -30,6 +30,10 @@ struct ExerciseGuide {
 
     static func find(_ name: String) -> Self? { catalog[name] }
 
+    static let names = catalog.keys.sorted {
+        $0.compare($1, options: [.caseInsensitive, .diacriticInsensitive], locale: Locale(identifier: "fr_FR")) == .orderedAscending
+    }
+
     private static let catalog: [String: Self] = [
         "Presse à cuisses": .init(.legPress, .legPress,
             setup: "Règle le siège et les sécurités avec la charge au minimum. Pose les pieds à plat sur le plateau, environ à largeur des hanches.",
@@ -245,32 +249,40 @@ struct ExerciseGuide {
 }
 
 struct ExerciseGuideScreen: View {
-    let exercise: WorkoutExercise
+    private let exerciseName: String
+    private let exercise: WorkoutExercise?
     @State private var restEndsAt: Date?
+
+    init(exercise: WorkoutExercise) {
+        exerciseName = exercise.name
+        self.exercise = exercise
+    }
+
+    init(exerciseName: String) {
+        self.exerciseName = exerciseName
+        exercise = nil
+    }
 
     var body: some View {
         KPage {
+            let guide = ExerciseGuide.find(exerciseName)
             VStack(alignment: .leading, spacing: 6) {
-                Text(exercise.name)
+                Text(exerciseName)
                     .font(.system(.largeTitle).weight(.heavy))
                     .accessibilityAddTraits(.isHeader)
-                Text(exercise.summaryText)
-                    .font(.subheadline)
-                    .foregroundStyle(muted)
-            }
-            if exercise.restSeconds > 0 {
-                restTimer
-            }
-            if let guide = ExerciseGuide.find(exercise.name) {
-                let media = ExerciseMediaAsset.catalogue[exercise.name]
-                if let film = media?.video, let url = film.url {
-                    ExerciseFilm(asset: film, url: url)
-                } else {
-                    ExerciseMotionView(motion: guide.motion, equipment: guide.equipment)
-                    if let url = media?.narrationURL {
-                        ExerciseNarration(url: url)
-                    }
+                if let exercise {
+                    Text(exercise.summaryText)
+                        .font(.subheadline)
+                        .foregroundStyle(muted)
                 }
+            }
+            if let guide {
+                ExerciseMediaSection(exerciseName: exerciseName, guide: guide)
+            }
+            if let exercise, exercise.restSeconds > 0 {
+                restTimer(seconds: exercise.restSeconds)
+            }
+            if let guide {
                 VStack(alignment: .leading, spacing: 16) {
                     instruction("Installation", guide.setup)
                     instruction("Mouvement", guide.action)
@@ -296,7 +308,7 @@ struct ExerciseGuideScreen: View {
         .toolbar(.visible, for: .navigationBar)
     }
 
-    private var restTimer: some View {
+    private func restTimer(seconds: Int) -> some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
             let remaining = max(0, Int(ceil(restEndsAt?.timeIntervalSince(context.date) ?? 0)))
             let active = remaining > 0 && restEndsAt != nil
@@ -315,9 +327,9 @@ struct ExerciseGuideScreen: View {
                         Text("Repos terminé").font(.subheadline.weight(.semibold))
                     }
                     Button {
-                        restEndsAt = .now.addingTimeInterval(Double(exercise.restSeconds))
+                        restEndsAt = .now.addingTimeInterval(Double(seconds))
                     } label: {
-                        Label("Démarrer le repos · \(exercise.restSeconds) s", systemImage: "timer")
+                        Label("Démarrer le repos · \(seconds) s", systemImage: "timer")
                     }
                     .buttonStyle(ActionStyle(filled: false))
                 }
@@ -333,14 +345,63 @@ struct ExerciseGuideScreen: View {
     }
 }
 
+enum ExerciseMediaAvailability: Equatable {
+    case avatarVideo, diagramVideo, narratedAnimation, animation, unavailable
+
+    static func forExercise(named name: String) -> Self {
+        guard ExerciseGuide.find(name) != nil else { return .unavailable }
+        let asset = ExerciseMediaAsset.catalogue[name]
+        if let video = asset?.video, video.url != nil, let availability = video.availability {
+            return availability
+        }
+        return asset?.narrationURL != nil ? .narratedAnimation : .animation
+    }
+
+    var isVideo: Bool { self == .avatarVideo || self == .diagramVideo }
+    var isDiagram: Bool { self == .diagramVideo || self == .narratedAnimation || self == .animation }
+
+    var label: String {
+        switch self {
+        case .avatarVideo: "Vidéo avatar"
+        case .diagramVideo: "Vidéo animée"
+        case .narratedAnimation: "Schéma et voix"
+        case .animation: "Schéma animé"
+        case .unavailable: "Fiche indisponible"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .avatarVideo: "play.rectangle.fill"
+        case .diagramVideo: "play.rectangle"
+        case .narratedAnimation: "speaker.wave.2"
+        case .animation: "figure.mixed.cardio"
+        case .unavailable: "info.circle"
+        }
+    }
+}
+
 private struct ExerciseMediaAsset: Decodable {
     struct Video: Decodable {
         let resource: String
         let width: Int
         let height: Int
+        let kind: String?
+
+        var availability: ExerciseMediaAvailability? {
+            switch kind {
+            case nil, "avatar": .avatarVideo
+            case "diagram": .diagramVideo
+            default: nil
+            }
+        }
+
+        var caption: String {
+            availability == .diagramVideo ? "Schéma animé · voix Bellami" : "Avatar généré par IA · voix Bellami"
+        }
 
         var url: URL? {
-            guard width > 0, height > 0 else { return nil }
+            guard width > 0, height > 0, availability != nil else { return nil }
             return ExerciseMediaAsset.bundledURL(resource, extension: "mp4")
         }
     }
@@ -364,24 +425,146 @@ private struct ExerciseMediaAsset: Decodable {
     }
 }
 
-private struct ExerciseFilm: View {
-    @Environment(\.scenePhase) private var scenePhase
-    @State private var player: AVPlayer?
-    let asset: ExerciseMediaAsset.Video
-    let url: URL
+private struct ExerciseMediaSection: View {
+    let exerciseName: String
+    let guide: ExerciseGuide
+    @State private var showsFilm = false
+    @State private var filmFailed = false
 
     var body: some View {
+        let media = ExerciseMediaAsset.catalogue[exerciseName]
         VStack(alignment: .leading, spacing: 10) {
-            SectionLabel(text: "DÉMONSTRATION VIDÉO")
-            VideoPlayer(player: player)
-                .aspectRatio(CGFloat(asset.width) / CGFloat(asset.height), contentMode: .fit)
-                .background(.black, in: RoundedRectangle(cornerRadius: 12))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-            Text("Avatar généré par IA · voix Bellami")
-                .font(.footnote).foregroundStyle(muted)
+            if !filmFailed, let video = media?.video, video.url != nil {
+                VStack(alignment: .leading, spacing: 10) {
+                    SectionLabel(text: "Démonstration vidéo")
+                    Button {
+                        showsFilm = true
+                    } label: {
+                        Label("Lire la vidéo", systemImage: "play.fill")
+                    }
+                    .buttonStyle(ActionStyle())
+                    .accessibilityIdentifier("exercise.media.play")
+                    Text(video.caption).font(.footnote).foregroundStyle(muted)
+                    if video.availability == .diagramVideo, !showsFilm {
+                        DisclosureGroup("Voir le schéma interactif") {
+                            ExerciseMotionView(motion: guide.motion, equipment: guide.equipment)
+                                .padding(.top, 8)
+                        }
+                        .font(.subheadline)
+                        .padding(.top, 4)
+                    }
+                }
+                .kPanel()
+            } else {
+                if filmFailed {
+                    Text("La vidéo n’a pas pu être lue. Le schéma du mouvement reste disponible.")
+                        .font(.footnote)
+                        .foregroundStyle(muted)
+                }
+                diagram(narration: media?.narrationURL)
+            }
         }
-        .kPanel()
-        .task { player = AVPlayer(url: url) }
+        .fullScreenCover(isPresented: $showsFilm) {
+            if let video = media?.video, let url = video.url {
+                ExerciseFilm(exerciseName: exerciseName, asset: video, url: url) {
+                    filmFailed = true
+                    showsFilm = false
+                }
+            }
+        }
+    }
+
+    private func diagram(narration: URL?) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ExerciseMotionView(motion: guide.motion, equipment: guide.equipment)
+            if let narration {
+                ExerciseNarration(url: narration)
+            }
+        }
+    }
+}
+
+private struct ExerciseFilm: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var player: AVPlayer?
+    @State private var playbackStatus = AVPlayer.TimeControlStatus.paused
+    @State private var ended = false
+    @State private var failed = false
+    let exerciseName: String
+    let asset: ExerciseMediaAsset.Video
+    let url: URL
+    let showDiagram: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 12) {
+                Text(exerciseName)
+                    .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer()
+                Button("Fermer", systemImage: "xmark") { dismiss() }
+                    .labelStyle(.iconOnly)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .accessibilityIdentifier("exercise.media.close")
+            }
+            if failed {
+                VStack(alignment: .leading, spacing: 14) {
+                    Label("Vidéo indisponible", systemImage: "exclamationmark.circle")
+                        .font(.headline)
+                    Button("Voir le schéma", action: showDiagram)
+                        .buttonStyle(ActionStyle())
+                }
+                .frame(maxHeight: .infinity)
+            } else if let player, let item = player.currentItem {
+                VideoPlayer(player: player)
+                    .aspectRatio(CGFloat(asset.width) / CGFloat(asset.height), contentMode: .fit)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(.black)
+                    .accessibilityIdentifier("exercise.media.player")
+                    .onReceive(player.publisher(for: \.timeControlStatus).receive(on: DispatchQueue.main)) { status in
+                        playbackStatus = status
+                        if status == .playing { ended = false }
+                    }
+                    .onReceive(item.publisher(for: \.status).receive(on: DispatchQueue.main)) { status in
+                        if status == .failed { fail() }
+                    }
+                    .onReceive(NotificationCenter.default.publisher(for: .AVPlayerItemDidPlayToEndTime, object: item)
+                        .receive(on: DispatchQueue.main)) { _ in
+                        ended = true
+                    }
+                    .onReceive(NotificationCenter.default.publisher(for: .AVPlayerItemFailedToPlayToEndTime, object: item)
+                        .receive(on: DispatchQueue.main)) { _ in
+                        fail()
+                    }
+                Button {
+                    if playbackStatus != .paused {
+                        player.pause()
+                    } else {
+                        if ended { player.seek(to: .zero) }
+                        player.play()
+                    }
+                } label: {
+                    Label(
+                        playbackStatus != .paused ? "Pause" : ended ? "Rejouer" : "Reprendre",
+                        systemImage: playbackStatus != .paused ? "pause.fill" : "play.fill"
+                    )
+                }
+                .buttonStyle(ActionStyle(filled: false))
+                .accessibilityIdentifier("exercise.media.playback-control")
+            } else {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            Text(asset.caption).font(.footnote).foregroundStyle(muted)
+        }
+        .padding(18)
+        .background(ink.ignoresSafeArea())
+        .task {
+            let localPlayer = AVPlayer(url: url)
+            player = localPlayer
+            if scenePhase == .active { localPlayer.play() }
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase != .active { player?.pause() }
         }
@@ -389,6 +572,11 @@ private struct ExerciseFilm: View {
             player?.pause()
             player = nil
         }
+    }
+
+    private func fail() {
+        player?.pause()
+        failed = true
     }
 }
 

@@ -39,7 +39,8 @@ struct CoachProfile: Codable, Equatable {
     var goal: FitnessGoal = .buildMuscle
     var level: FitnessLevel = .beginner
     var equipment: WorkoutEquipment = .gym
-    var sessionsPerWeek = 3
+    var sessionsPerWeek = 5
+    var upperBodyPriorityPlan: Bool? = true
     var sessionMinutes = 45
     var preferredHour = 18
     var heightCM: Double?
@@ -49,6 +50,10 @@ struct CoachProfile: Codable, Equatable {
     var alcoholServingsPerWeek: Int?
     var smokingNotes = ""
     var habitNotes = ""
+
+    var usesPriorityPlan: Bool {
+        upperBodyPriorityPlan == true && sessionsPerWeek == 5 && equipment != .bodyweight
+    }
 }
 
 struct CoachPreferences: Codable, Equatable {
@@ -184,6 +189,7 @@ final class CoachStore: ObservableObject {
     private let defaults: UserDefaults
     private let scheduler = ReminderScheduler()
     private static let storageKey = "kaaris.coach.v1"
+    private var nextPriorityWeek: Date?
 
     init(
         demo: Bool = ProcessInfo.processInfo.arguments.contains("--demo"),
@@ -227,6 +233,7 @@ final class CoachStore: ObservableObject {
             sessions = snapshot.sessions
             hasOnboarded = snapshot.hasOnboarded
             workoutLogs = snapshot.workoutLogs ?? [:]
+            nextPriorityWeek = snapshot.nextPriorityWeek
         } else {
             profile = CoachProfile()
             preferences = CoachPreferences()
@@ -248,9 +255,47 @@ final class CoachStore: ObservableObject {
 
     func generatePlan(from date: Date = .now) {
         let existing = sessions.filter { $0.status != .planned || $0.date < date }
+        if profile.usesPriorityPlan {
+            let start = PriorityWorkoutPlan.nextStart(for: profile, after: date)
+            schedulePriorityWeeks(2, from: start, keeping: existing)
+            return
+        }
+        nextPriorityWeek = nil
         let reserved = existing.filter { ($0.status == .checkedIn || $0.status == .completed) && $0.endDate > date }
         sessions = (existing + WorkoutPlan.make(for: profile, from: date, excluding: reserved))
             .sorted { $0.date < $1.date }
+    }
+
+    func activatePriorityPlan() {
+        guard profile.equipment != .bodyweight else { return }
+        var updated = profile
+        updated.sessionsPerWeek = 5
+        updated.upperBodyPriorityPlan = true
+        profile = updated
+        generatePlan()
+    }
+
+    func replenishPriorityPlan(now: Date = .now) {
+        let calendar = Calendar.current
+        guard profile.usesPriorityPlan, let next = nextPriorityWeek,
+              let horizon = calendar.date(byAdding: .day, value: 7, to: now), next <= horizon else { return }
+        let missedWeek = next < now
+        let start = missedWeek ? PriorityWorkoutPlan.nextStart(for: profile, after: now, calendar: calendar) : next
+        schedulePriorityWeeks(missedWeek ? 2 : 1, from: start, keeping: sessions, calendar: calendar)
+    }
+
+    private func schedulePriorityWeeks(_ count: Int, from start: Date, keeping existing: [WorkoutSession],
+                                       calendar: Calendar = .current) {
+        var schedule = existing
+        var anchor = start
+        for _ in 0..<count {
+            guard let next = calendar.date(byAdding: .day, value: 7, to: anchor) else { break }
+            let reserved = schedule.filter { $0.status != .skipped && $0.endDate > anchor }
+            schedule += PriorityWorkoutPlan.week(for: profile, starting: anchor, calendar: calendar, excluding: reserved)
+            anchor = next
+        }
+        nextPriorityWeek = anchor
+        sessions = schedule.sorted { $0.date < $1.date }
     }
 
     func updateStatus(_ status: WorkoutStatus, for id: UUID) {
@@ -279,6 +324,29 @@ final class CoachStore: ObservableObject {
 
     func completionDate(for session: WorkoutSession) -> Date {
         workoutLogs[session.id]?.performedAt ?? session.date
+    }
+
+    func validateWorkoutRevision(_ revision: WorkoutRevision) throws {
+        guard let current = sessions.first(where: { $0.id == revision.original.id }),
+              current == revision.original else { throw WorkoutRevisionError.stale }
+        guard current.canRevise, workoutLogs[current.id] == nil else { throw WorkoutRevisionError.inactive }
+        let proposed = revision.revised
+        guard proposed.id == current.id, proposed.date == current.date, proposed.status == current.status,
+              (10...90).contains(proposed.durationMinutes), !proposed.exercises.isEmpty else {
+            throw WorkoutRevisionError.inactive
+        }
+        guard proposed != current else { throw WorkoutRevisionError.noChange }
+        guard !sessions.contains(where: {
+            $0.id != current.id && $0.canRevise && $0.date < proposed.endDate && proposed.date < $0.endDate
+        }) else { throw WorkoutRevisionError.conflict }
+    }
+
+    func applyWorkoutRevision(_ revision: WorkoutRevision) throws {
+        try validateWorkoutRevision(revision)
+        guard let index = sessions.firstIndex(where: { $0.id == revision.original.id }) else {
+            throw WorkoutRevisionError.stale
+        }
+        sessions[index] = revision.revised
     }
 
     @discardableResult
@@ -342,7 +410,8 @@ final class CoachStore: ObservableObject {
             preferences: preferences,
             sessions: sessions,
             hasOnboarded: hasOnboarded,
-            workoutLogs: workoutLogs
+            workoutLogs: workoutLogs,
+            nextPriorityWeek: nextPriorityWeek
         )
         if let data = try? JSONEncoder().encode(snapshot) {
             defaults.set(data, forKey: Self.storageKey)
@@ -367,6 +436,7 @@ final class CoachStore: ObservableObject {
         let sessions: [WorkoutSession]
         let hasOnboarded: Bool
         let workoutLogs: [UUID: WorkoutLog]?
+        let nextPriorityWeek: Date?
     }
 }
 
@@ -377,6 +447,10 @@ enum WorkoutPlan {
         calendar: Calendar = .current,
         excluding reserved: [WorkoutSession] = []
     ) -> [WorkoutSession] {
+        if profile.usesPriorityPlan {
+            let start = PriorityWorkoutPlan.nextStart(for: profile, after: date, calendar: calendar)
+            return PriorityWorkoutPlan.week(for: profile, starting: start, calendar: calendar, excluding: reserved)
+        }
         let hour = max(0, min(23, profile.preferredHour))
         let days = calendar.startOfDay(for: date)
         guard let today = calendar.date(bySettingHour: hour, minute: 0, second: 0, of: days) else { return [] }
@@ -412,6 +486,106 @@ enum WorkoutPlan {
         return result
     }
 
+    static func adapt(_ session: WorkoutSession, for profile: CoachProfile, request: WorkoutRevisionRequest) throws -> WorkoutSession {
+        let sourceEquipment = session.equipment ?? profile.equipment
+        let equipment = request.equipment ?? sourceEquipment
+        let minutes = request.minutes ?? session.durationMinutes
+        var newProfile = profile
+        newProfile.equipment = equipment
+
+        let oldKind = SessionKind.allCases.first { $0.title == session.title }
+        let kind = request.focus.map(SessionKind.init(focus:)) ?? oldKind
+        let refocus = request.focus != nil && kind != oldKind
+        var exercises = session.exercises
+        if refocus, let kind {
+            exercises = kind.exercises(for: newProfile, minutes: minutes)
+        } else if let day = PriorityWorkoutDay(rawValue: session.title), equipment != sourceEquipment, equipment != .bodyweight {
+            exercises = day.exercises(for: newProfile, minutes: minutes)
+        } else if let kind, kind == .conditioning || kind == .mobility,
+                  equipment != sourceEquipment || minutes != session.durationMinutes {
+            exercises = kind.exercises(for: newProfile, minutes: minutes)
+        } else {
+            if equipment != sourceEquipment {
+                exercises = try exercises.map { exercise in
+                    guard let move = Move.containing(exercise.name) else {
+                        if exercise.restSeconds == 0 { return exercise }
+                        throw WorkoutRevisionError.unsupported("Choisis aussi un type de séance pour adapter ces exercices à ton matériel.")
+                    }
+                    if exercise.name == "Pompes au mur, prise serrée" { return exercise }
+                    if move == .arm, equipment == .bodyweight {
+                        throw WorkoutRevisionError.unsupported("Pour garder le travail direct des biceps, il faut des haltères ou une poulie. Tu peux aussi demander un autre type de séance.")
+                    }
+                    return exercise.revised(name: move.name(for: equipment))
+                }
+                var included: Set<String> = []
+                exercises = exercises.filter { included.insert($0.name).inserted }
+            }
+            if minutes < session.durationMinutes, exercises.contains(where: { $0.restSeconds > 0 }) {
+                let maximumExercises = minutes < 25 ? 2 : minutes < 40 ? 3 : 4
+                exercises = Array(exercises.prefix(maximumExercises))
+                if minutes < 25 { exercises = exercises.map { $0.revised(sets: min(2, $0.sets)) } }
+            }
+        }
+
+        if let target = request.target {
+            let names = exercises.map(\.name)
+            let matches = WorkoutRevisionRequest.matchingExercise(target, in: names)
+            guard matches.count == 1, let name = matches.first, let index = names.firstIndex(of: name) else {
+                throw WorkoutRevisionError.unsupported("Précise le nom de l’exercice dans la séance proposée.")
+            }
+            if let replacement = request.replacement {
+                let alternatives = Move.containing(name).map { move in
+                    WorkoutEquipment.allCases.map { move.name(for: $0) }.filter { $0 != name }
+                } ?? []
+                let allowed = Move.allCases.flatMap { move in
+                    switch equipment {
+                    case .gym: WorkoutEquipment.allCases.map { move.name(for: $0) }
+                    case .dumbbells: [move.name(for: .dumbbells), move.name(for: .bodyweight)]
+                    case .bodyweight: [move.name(for: .bodyweight)]
+                    }
+                }
+                let choices: [String]
+                if replacement.isEmpty {
+                    choices = alternatives.filter { allowed.contains($0) && !names.contains($0) }
+                } else {
+                    choices = WorkoutRevisionRequest.matchingExercise(replacement, in: Array(Set(allowed))).filter { !names.contains($0) }
+                }
+                guard let choice = choices.first, replacement.isEmpty || choices.count == 1 else {
+                    throw WorkoutRevisionError.unsupported("Indique un autre exercice compatible avec le matériel de la séance.")
+                }
+                let exercise = exercises[index]
+                let reps = Move.containing(choice)?.reps ?? "8–12"
+                exercises[index] = exercise.revised(name: choice, reps: reps, restSeconds: max(60, exercise.restSeconds))
+            } else {
+                guard exercises.count > 1 else {
+                    throw WorkoutRevisionError.unsupported("La séance doit garder un exercice. Tu peux demander de le remplacer.")
+                }
+                exercises.remove(at: index)
+            }
+        }
+
+        if let effort = request.effort {
+            exercises = exercises.map { exercise in
+                if exercise.restSeconds > 0 {
+                    let sets = effort == .lighter ? max(1, exercise.sets - 1) : max(exercise.sets, min(minutes < 25 ? 2 : 4, exercise.sets + 1))
+                    return exercise.revised(sets: sets)
+                }
+                guard exercise.reps.hasSuffix(" min"),
+                      let duration = Int(exercise.reps.dropLast(4)), duration > 5 else { return exercise }
+                let adjusted = effort == .lighter ? max(5, duration - 5) : min(minutes - 5, duration + 5)
+                return exercise.revised(reps: "\(adjusted) min")
+            }
+        }
+
+        let result = WorkoutSession(
+            id: session.id, title: refocus ? kind?.title ?? session.title : session.title,
+            date: session.date, durationMinutes: minutes, focus: refocus ? kind?.focus ?? session.focus : session.focus,
+            exercises: exercises, status: session.status, equipment: request.equipment ?? session.equipment
+        )
+        guard result != session else { throw WorkoutRevisionError.noChange }
+        return result
+    }
+
     private static func split(for count: Int, goal: FitnessGoal) -> [(Int, SessionKind)] {
         let emphasizeCardio = goal == .loseWeight || goal == .getFitter
         if emphasizeCardio {
@@ -433,8 +607,18 @@ enum WorkoutPlan {
     }
 }
 
-private enum SessionKind {
+private enum SessionKind: CaseIterable {
     case fullA, fullB, upper, lower, upperPull, lowerHips, conditioning, mobility
+
+    init(focus: WorkoutRevisionFocus) {
+        self = switch focus {
+        case .fullBody: .fullA
+        case .upperBody: .upper
+        case .lowerBody: .lower
+        case .cardio: .conditioning
+        case .recovery: .mobility
+        }
+    }
 
     var title: String {
         switch self {
@@ -505,7 +689,7 @@ private enum SessionKind {
     }
 }
 
-private enum Move {
+private enum Move: CaseIterable {
     case squat, press, row, core, hinge, verticalPull, overhead, arm, splitSquat, calf, bridge
 
     var reps: String? {
@@ -515,6 +699,10 @@ private enum Move {
         case .row: "8–12"
         default: nil
         }
+    }
+
+    static func containing(_ name: String) -> Self? {
+        allCases.first { move in WorkoutEquipment.allCases.contains { move.name(for: $0) == name } }
     }
 
     func name(for equipment: WorkoutEquipment) -> String {
@@ -537,5 +725,17 @@ private enum Move {
         case .dumbbells: return variants.dumbbells
         case .bodyweight: return variants.bodyweight
         }
+    }
+}
+
+extension WorkoutSession {
+    var canRevise: Bool { status == .planned || status == .checkedIn }
+}
+
+private extension WorkoutExercise {
+    func revised(name: String? = nil, sets: Int? = nil, reps: String? = nil, restSeconds: Int? = nil) -> Self {
+        let name = name ?? self.name
+        return Self(id: name == self.name ? id : UUID(), name: name, sets: sets ?? self.sets,
+                    reps: reps ?? self.reps, restSeconds: restSeconds ?? self.restSeconds)
     }
 }

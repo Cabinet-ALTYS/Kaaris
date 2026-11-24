@@ -6,7 +6,9 @@ Coach sportif gratuit pour iPhone, en français. Choisis un objectif et 2 à 6 s
 
 Ouvrir `ios/Kaaris.xcodeproj`, choisir le schéma **Kaaris** et lancer sur un simulateur iOS 17 ou ultérieur. Ajouter l’argument `--demo` au lancement pour afficher un programme fictif sans connecter de compte. En usage normal, renseigner l’onboarding pour créer son programme.
 
-- Plan par objectif, niveau, matériel et durée. Les 35 fiches d’exercice expliquent le mouvement, la respiration et la progression. 17 fiches proposent une vidéo de l’avatar KAARIS avec des repères à l’écran et la voix Bellami. Les 18 autres proposent une animation du mouvement et une consigne Bellami à écouter.
+- **Plan → Voir les démonstrations** ouvre une bibliothèque de 35 vidéos hors ligne avec Bellami. Le lecteur est également accessible dans chaque fiche, avec 17 vidéos de l’avatar et 18 démonstrations schématiques.
+- Le programme de cinq séances associe deux journées pectoraux et triceps, deux biceps, une jambes et abdos et un travail du dos le premier jour biceps. Il utilise les haltères ou les machines et prépare deux semaines de créneaux, puis les complète à l’ouverture de l’app. Les profils existants peuvent l’activer depuis Plan.
+- Dans une séance ou depuis Coach, dicte ou écris une adaptation. KAARIS propose une autre durée, un autre matériel, un type de séance, un effort ou un remplacement d’exercice. Tu peux affiner puis confirmer la modification de la séance dans le plan. La dictée reste sur l’iPhone si elle y est disponible. Les réponses variables utilisent la voix française d’iOS.
 - Journal hors ligne avec séries, répétitions ou durée, charge facultative, corrections, bilan hebdomadaire et évolution par exercice.
 - Onglet Repères avec recherche locale et 18 fiches sourcées sur le sport, la nutrition et la récupération.
 - Rappels locaux iOS, notification de test, pause et heures silencieuses. Les réglages affichent les relances en file iOS et leur prochaine échéance. Le langage, la fréquence des relances et la pression sur l’ego se règlent séparément. Un consentement distinct active le ton cru dans les notifications.

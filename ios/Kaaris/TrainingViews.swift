@@ -146,6 +146,32 @@ struct PlanScreen: View {
                 .accessibilityLabel("Google Agenda")
             }
 
+            NavigationLink {
+                ExerciseMediaLibrary()
+            } label: {
+                Label("Voir les démonstrations", systemImage: "play.rectangle")
+            }
+            .buttonStyle(ActionStyle(filled: false))
+            .accessibilityIdentifier("exercise.media.library")
+
+            VStack(alignment: .leading, spacing: 10) {
+                SectionLabel(text: "PROGRAMME 5 SÉANCES")
+                Text("Deux séances pectoraux et triceps, deux biceps, une jambes et abdos. Le dos est travaillé avec la première séance biceps.")
+                    .font(.subheadline).foregroundStyle(muted)
+                if store.profile.usesPriorityPlan {
+                    Label("Programme automatique actif", systemImage: "checkmark.circle.fill")
+                        .font(.subheadline.weight(.semibold)).foregroundStyle(acid)
+                } else if store.profile.equipment == .bodyweight {
+                    Text("Ce programme utilise des haltères ou le matériel de la salle pour les curls biceps.")
+                        .font(.footnote).foregroundStyle(muted)
+                } else {
+                    Button("Activer le programme 5 séances") { store.activatePriorityPlan() }
+                        .buttonStyle(ActionStyle(filled: false))
+                        .accessibilityIdentifier("workout-plan-priority")
+                }
+            }
+            .kPanel()
+
             VStack(alignment: .leading, spacing: 10) {
                 SectionLabel(text: "CETTE SEMAINE")
                 HStack(alignment: .firstTextBaseline) {
@@ -226,6 +252,15 @@ struct WorkoutDetail: View {
                 SectionLabel(text: "\(dateLabel(session.date)) · \(hourLabel(session.date))")
                 KTitle(text: session.title.uppercased())
                 Text("\(session.focus) · \(session.durationMinutes) min").foregroundStyle(muted)
+                if session.canRevise && store.workoutLogs[session.id] == nil {
+                    NavigationLink {
+                        CoachWorkoutChat(sessionID: session.id)
+                    } label: {
+                        Label("Adapter avec KAARIS", systemImage: "mic.fill")
+                    }
+                    .buttonStyle(ActionStyle())
+                    .accessibilityIdentifier("workout-coach-from-session")
+                }
 
                 VStack(alignment: .leading, spacing: 14) {
                     SectionLabel(text: "ÉCHAUFFEMENT")
@@ -243,6 +278,7 @@ struct WorkoutDetail: View {
                                     Text(exercise.name).font(.headline)
                                     Text(exercise.summaryText)
                                         .font(.subheadline).foregroundStyle(muted)
+                                    ExerciseMediaBadge(exerciseName: exercise.name)
                                 }
                                 Spacer()
                                 Image(systemName: "chevron.right")
@@ -357,8 +393,7 @@ struct CoachScreen: View {
     var body: some View {
         KPage {
             VStack(alignment: .leading, spacing: 3) {
-                SectionLabel(text: "POINTAGE")
-                KTitle(text: "ON FAIT LE POINT.")
+                KTitle(text: "PARLE À KAARIS.")
             }
             ZStack(alignment: .bottomLeading) {
                 CoachPortrait(height: 290)
@@ -368,12 +403,20 @@ struct CoachScreen: View {
                     .padding(18)
             }
             .clipShape(RoundedRectangle(cornerRadius: 20))
+            NavigationLink {
+                CoachWorkoutChat()
+            } label: {
+                Label("Parler à KAARIS", systemImage: "mic.fill")
+            }
+            .buttonStyle(ActionStyle())
+            .accessibilityIdentifier("workout-coach-from-tab")
+
             Button {
                 showCall = true
             } label: {
                 Label("Lancer le check-in vocal", systemImage: "waveform")
             }
-            .buttonStyle(ActionStyle())
+            .buttonStyle(ActionStyle(filled: false))
 
             if let session = store.sessions
                 .filter({ $0.status == .planned || $0.status == .checkedIn })

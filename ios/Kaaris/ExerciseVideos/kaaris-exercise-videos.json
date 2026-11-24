@@ -21,10 +21,22 @@
     }
   },
   "Développé haltères au sol": {
-    "narration": "kaaris-narration-dumbbell-floor-press"
+    "narration": "kaaris-narration-dumbbell-floor-press",
+    "video": {
+      "height": 1280,
+      "kind": "diagram",
+      "resource": "kaaris-diagram-dumbbell-floor-press",
+      "width": 720
+    }
   },
   "Développé à la machine": {
-    "narration": "kaaris-narration-machine-chest-press"
+    "narration": "kaaris-narration-machine-chest-press",
+    "video": {
+      "height": 1280,
+      "kind": "diagram",
+      "resource": "kaaris-diagram-machine-chest-press",
+      "width": 720
+    }
   },
   "Développé épaules avec haltères": {
     "video": {
@@ -34,16 +46,40 @@
     }
   },
   "Développé épaules à la machine": {
-    "narration": "kaaris-narration-machine-shoulder-press"
+    "narration": "kaaris-narration-machine-shoulder-press",
+    "video": {
+      "height": 1280,
+      "kind": "diagram",
+      "resource": "kaaris-diagram-machine-shoulder-press",
+      "width": 720
+    }
   },
   "Fentes arrière": {
-    "narration": "kaaris-narration-reverse-lunge"
+    "narration": "kaaris-narration-reverse-lunge",
+    "video": {
+      "height": 1280,
+      "kind": "diagram",
+      "resource": "kaaris-diagram-reverse-lunge",
+      "width": 720
+    }
   },
   "Fentes arrière avec appui": {
-    "narration": "kaaris-narration-supported-reverse-lunge"
+    "narration": "kaaris-narration-supported-reverse-lunge",
+    "video": {
+      "height": 1280,
+      "kind": "diagram",
+      "resource": "kaaris-diagram-supported-reverse-lunge",
+      "width": 720
+    }
   },
   "Fentes arrière avec haltères": {
-    "narration": "kaaris-narration-dumbbell-reverse-lunge"
+    "narration": "kaaris-narration-dumbbell-reverse-lunge",
+    "video": {
+      "height": 1280,
+      "kind": "diagram",
+      "resource": "kaaris-diagram-dumbbell-reverse-lunge",
+      "width": 720
+    }
   },
   "Gainage ventral": {
     "video": {
@@ -67,7 +103,13 @@
     }
   },
   "Hip thrust guidé": {
-    "narration": "kaaris-narration-machine-hip-thrust"
+    "narration": "kaaris-narration-machine-hip-thrust",
+    "video": {
+      "height": 1280,
+      "kind": "diagram",
+      "resource": "kaaris-diagram-machine-hip-thrust",
+      "width": 720
+    }
   },
   "Marche rapide, allure modérée": {
     "video": {
@@ -84,10 +126,22 @@
     }
   },
   "Mobilité douce des hanches et des épaules": {
-    "narration": "kaaris-narration-gentle-hip-and-shoulder-mobility"
+    "narration": "kaaris-narration-gentle-hip-and-shoulder-mobility",
+    "video": {
+      "height": 1280,
+      "kind": "diagram",
+      "resource": "kaaris-diagram-gentle-hip-and-shoulder-mobility",
+      "width": 720
+    }
   },
   "Mollets debout": {
-    "narration": "kaaris-narration-standing-calf-raise"
+    "narration": "kaaris-narration-standing-calf-raise",
+    "video": {
+      "height": 1280,
+      "kind": "diagram",
+      "resource": "kaaris-diagram-standing-calf-raise",
+      "width": 720
+    }
   },
   "Mollets debout avec appui": {
     "video": {
@@ -97,7 +151,13 @@
     }
   },
   "Mollets debout avec haltères": {
-    "narration": "kaaris-narration-dumbbell-calf-raise"
+    "narration": "kaaris-narration-dumbbell-calf-raise",
+    "video": {
+      "height": 1280,
+      "kind": "diagram",
+      "resource": "kaaris-diagram-dumbbell-calf-raise",
+      "width": 720
+    }
   },
   "Pompes au mur, prise serrée": {
     "video": {
@@ -107,7 +167,13 @@
     }
   },
   "Pompes inclinées": {
-    "narration": "kaaris-narration-incline-push-up"
+    "narration": "kaaris-narration-incline-push-up",
+    "video": {
+      "height": 1280,
+      "kind": "diagram",
+      "resource": "kaaris-diagram-incline-push-up",
+      "width": 720
+    }
   },
   "Pont fessier au sol": {
     "video": {
@@ -117,13 +183,31 @@
     }
   },
   "Pont fessier avec haltère": {
-    "narration": "kaaris-narration-dumbbell-glute-bridge"
+    "narration": "kaaris-narration-dumbbell-glute-bridge",
+    "video": {
+      "height": 1280,
+      "kind": "diagram",
+      "resource": "kaaris-diagram-dumbbell-glute-bridge",
+      "width": 720
+    }
   },
   "Presse à cuisses": {
-    "narration": "kaaris-narration-leg-press"
+    "narration": "kaaris-narration-leg-press",
+    "video": {
+      "height": 1280,
+      "kind": "diagram",
+      "resource": "kaaris-diagram-leg-press",
+      "width": 720
+    }
   },
   "Pull-over haltère au sol": {
-    "narration": "kaaris-narration-dumbbell-floor-pullover"
+    "narration": "kaaris-narration-dumbbell-floor-pullover",
+    "video": {
+      "height": 1280,
+      "kind": "diagram",
+      "resource": "kaaris-diagram-dumbbell-floor-pullover",
+      "width": 720
+    }
   },
   "Retour au calme, allure facile": {
     "video": {
@@ -140,7 +224,13 @@
     }
   },
   "Soulevé de terre roumain avec haltères": {
-    "narration": "kaaris-narration-dumbbell-romanian-deadlift"
+    "narration": "kaaris-narration-dumbbell-romanian-deadlift",
+    "video": {
+      "height": 1280,
+      "kind": "diagram",
+      "resource": "kaaris-diagram-dumbbell-romanian-deadlift",
+      "width": 720
+    }
   },
   "Squat au poids du corps": {
     "video": {
@@ -150,7 +240,13 @@
     }
   },
   "Tirage des coudes au sol": {
-    "narration": "kaaris-narration-prone-elbow-row"
+    "narration": "kaaris-narration-prone-elbow-row",
+    "video": {
+      "height": 1280,
+      "kind": "diagram",
+      "resource": "kaaris-diagram-prone-elbow-row",
+      "width": 720
+    }
   },
   "Tirage horizontal assis": {
     "video": {
@@ -160,7 +256,13 @@
     }
   },
   "Tirage vertical poitrine": {
-    "narration": "kaaris-narration-lat-pulldown"
+    "narration": "kaaris-narration-lat-pulldown",
+    "video": {
+      "height": 1280,
+      "kind": "diagram",
+      "resource": "kaaris-diagram-lat-pulldown",
+      "width": 720
+    }
   },
   "Vélo ou tapis, allure modérée": {
     "video": {
@@ -170,6 +272,12 @@
     }
   },
   "Y-T-W au sol": {
-    "narration": "kaaris-narration-prone-ytw"
+    "narration": "kaaris-narration-prone-ytw",
+    "video": {
+      "height": 1280,
+      "kind": "diagram",
+      "resource": "kaaris-diagram-prone-ytw",
+      "width": 720
+    }
   }
 }
