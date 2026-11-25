@@ -53,18 +53,22 @@ struct WorkoutReminder: Equatable {
 }
 
 struct ReminderLedger: Codable {
-    private static let storageKey = "kaaris.reminder-ledger.v1"
     private var elapsed: [Date] = []
     private var scheduled: [Date] = []
 
-    static func load(from defaults: UserDefaults = .standard) -> ReminderLedger {
-        guard let data = defaults.data(forKey: storageKey),
+    private static func storageKey(for accountID: UUID) -> String {
+        "kaaris.reminder-ledger.v2.\(accountID.uuidString)"
+    }
+
+    static func load(from defaults: UserDefaults, accountID: UUID?) -> ReminderLedger {
+        guard let accountID, let data = defaults.data(forKey: storageKey(for: accountID)),
               let ledger = try? JSONDecoder().decode(Self.self, from: data) else { return ReminderLedger() }
         return ledger
     }
 
-    func save(to defaults: UserDefaults = .standard) {
-        if let data = try? JSONEncoder().encode(self) { defaults.set(data, forKey: Self.storageKey) }
+    func save(to defaults: UserDefaults, accountID: UUID?) {
+        guard let accountID, let data = try? JSONEncoder().encode(self) else { return }
+        defaults.set(data, forKey: Self.storageKey(for: accountID))
     }
 
     func dueDates(at now: Date) -> [Date] {
@@ -96,7 +100,7 @@ enum ReminderPlan {
         preferences: CoachPreferences,
         now: Date,
         calendar: Calendar = .current,
-        alreadyDue: [Date]? = nil
+        alreadyDue: [Date] = []
     ) -> [WorkoutReminder] {
         guard preferences.remindersEnabled, preferences.reminderIntensity > 0 else { return [] }
 
@@ -108,7 +112,7 @@ enum ReminderPlan {
             Prompt(key: "prepare", offsetMinutes: -180, title: "Séance aujourd’hui", message: "Vérifie ton créneau et prépare tes affaires.", target: .coach),
             Prompt(key: "follow-up", offsetMinutes: 120, title: "Confirme ta séance", message: "Fais le point sur ta séance ou reprogramme-la.", target: .call)
         ]
-        let dueDates = alreadyDue ?? ReminderLedger.load().dueDates(at: now)
+        let dueDates = alreadyDue
         let blunt = preferences.bluntNotificationsEnabled
 
         func eligible(_ date: Date) -> Bool {
@@ -168,12 +172,24 @@ enum ReminderPlan {
 final class ReminderScheduler {
     private let center = UNUserNotificationCenter.current()
     private let logger = Logger(subsystem: "Kaaris", category: "Reminders")
+    private let accountID: UUID?
+    private let defaults: UserDefaults
+    private var active: Bool
     private var pendingReplacement: Task<Void, Never>?
+    private var pendingTest: Task<Bool, Never>?
     private var revision = 0
     private var clearBluntDeliveryRequested = false
-    private var ledger = ReminderLedger.load()
+    private var ledger: ReminderLedger
+
+    init(accountID: UUID?, defaults: UserDefaults) {
+        self.accountID = accountID
+        self.defaults = defaults
+        active = accountID != nil
+        ledger = ReminderLedger.load(from: defaults, accountID: accountID)
+    }
 
     func requestPermission() async -> Bool {
+        guard active else { return false }
         do {
             return try await center.requestAuthorization(options: [.alert, .sound])
         } catch {
@@ -218,7 +234,17 @@ final class ReminderScheduler {
     }
 
     func sendTest() async -> Bool {
-        guard await deliverySettings().authorization.acceptsReminders else { return false }
+        guard active else { return false }
+        if let pendingTest { return await pendingTest.value }
+        let task = Task { await queueTest() }
+        pendingTest = task
+        let sent = await task.value
+        pendingTest = nil
+        return active && sent
+    }
+
+    private func queueTest() async -> Bool {
+        guard await deliverySettings().authorization.acceptsReminders, active else { return false }
         let content = content(
             title: "Test de notification KAARIS",
             body: "Ouvre ce test pour essayer l’appel simulé dans l’app.",
@@ -238,6 +264,7 @@ final class ReminderScheduler {
         sessions: [WorkoutSession], preferences: CoachPreferences, clearBluntDelivery: Bool,
         didUpdate: @escaping @MainActor (ReminderDelivery) -> Void
     ) {
+        guard active else { return }
         clearBluntDeliveryRequested = clearBluntDeliveryRequested || clearBluntDelivery
         revision += 1
         let target = revision
@@ -250,6 +277,32 @@ final class ReminderScheduler {
             guard self.revision == target else { return }
             didUpdate(delivery)
         }
+    }
+
+    func remindersAlreadyDue(at date: Date) -> [Date] {
+        ledger.dueDates(at: date)
+    }
+
+    func deactivate() async {
+        active = false
+        revision += 1
+        await pendingReplacement?.value
+        _ = await pendingTest?.value
+        await Self.clearAccountNotifications()
+        ledger.cancelFuture(at: .now, calendar: .current)
+        ledger.save(to: defaults, accountID: accountID)
+    }
+
+    static func clearAccountNotifications() async {
+        let center = UNUserNotificationCenter.current()
+        let pending = await center.pendingNotificationRequests().map(\.identifier).filter(isAccountNotification)
+        center.removePendingNotificationRequests(withIdentifiers: pending)
+        let delivered = await center.deliveredNotifications().map(\.request.identifier).filter(isAccountNotification)
+        center.removeDeliveredNotifications(withIdentifiers: delivered)
+    }
+
+    private static func isAccountNotification(_ identifier: String) -> Bool {
+        identifier.hasPrefix(ReminderPlan.identifierPrefix) || identifier == ReminderPlan.testIdentifier
     }
 
     private func apply(sessions: [WorkoutSession], preferences: CoachPreferences, revision: Int) async {
@@ -288,7 +341,7 @@ final class ReminderScheduler {
         }
         let obsolete = existingByID.keys.filter { !keep.contains($0) }
         if !obsolete.isEmpty { center.removePendingNotificationRequests(withIdentifiers: Array(obsolete)) }
-        ledger.save()
+        ledger.save(to: defaults, accountID: accountID)
         if clearBluntDeliveryRequested {
             let delivered = await center.deliveredNotifications()
             guard revision == self.revision else { return }
@@ -306,7 +359,7 @@ final class ReminderScheduler {
                 try await center.add(request)
                 if !keep.contains(request.identifier) {
                     ledger.recordScheduled(at: dueAt)
-                    ledger.save()
+                    ledger.save(to: defaults, accountID: accountID)
                 }
             } catch {
                 logger.error("Could not schedule a workout reminder")
@@ -336,6 +389,7 @@ final class ReminderScheduler {
         content.sound = .default
         content.interruptionLevel = .active
         content.userInfo = ["target": target.rawValue]
+        if let accountID { content.userInfo["accountID"] = accountID.uuidString }
         return content
     }
 }

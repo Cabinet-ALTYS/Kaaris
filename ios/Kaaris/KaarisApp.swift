@@ -11,27 +11,97 @@ let muted = Color(red: 166/255, green: 166/255, blue: 174/255)
 @main
 struct KaarisApp: App {
     @UIApplicationDelegateAdaptor(NotificationDelegate.self) private var notifications
-    @StateObject private var store = CoachStore()
     @StateObject private var connection = KaarisConnection()
 
     var body: some Scene {
         WindowGroup {
-            KaarisRoot()
-                .environmentObject(store)
+            AccountGate()
                 .environmentObject(connection)
                 .environment(\.locale, Locale(identifier: "fr_FR"))
                 .preferredColorScheme(.dark)
                 .tint(acid)
-                .task { connection.restoreAccount() }
-                .onChange(of: connection.isSignedIn) { wasSignedIn, isSignedIn in
-                    if wasSignedIn && !isSignedIn {
-                        var preferences = store.preferences
-                        preferences.onlineCoachConsent = nil
-                        preferences.elevenLabsVoiceConsent = nil
-                        store.preferences = preferences
-                    }
-                }
         }
+    }
+}
+
+private struct AccountGate: View {
+    struct Presentation: Hashable {
+        let ready: Bool
+        let accountID: UUID?
+    }
+
+    @EnvironmentObject private var connection: KaarisConnection
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var store: CoachStore?
+    @State private var cleanup: Task<Void, Never>?
+    @State private var automaticUnlockAttempted = false
+
+    var body: some View {
+        ZStack {
+            ink.ignoresSafeArea()
+            if KaarisConnection.demoMode, let store {
+                KaarisRoot().environmentObject(store)
+            } else if !connection.authReady {
+                ProgressView("Ouverture de KAARIS…")
+            } else if connection.accountID == nil {
+                AuthenticationScreen()
+            } else if connection.faceIDLocked {
+                AccountLockScreen(
+                    message: connection.unlockNotice,
+                    unlocking: connection.unlocking,
+                    unlock: { Task { await connection.unlockAccount() } },
+                    signOut: { Task { await connection.logout() } }
+                )
+                .task { await unlockOnOpen() }
+            } else if let store, let accountID = connection.accountID, store.accountID == accountID {
+                KaarisRoot().environmentObject(store).id(accountID)
+            } else {
+                ProgressView("Ouverture de ton compte…")
+            }
+        }
+        .overlay {
+            if scenePhase != .active && !KaarisConnection.demoMode {
+                ink.ignoresSafeArea()
+            }
+        }
+        .task {
+            if KaarisConnection.demoMode { store = CoachStore(demo: true) }
+            await connection.restoreAccount()
+        }
+        .task(id: Presentation(ready: connection.authReady, accountID: connection.accountID)) {
+            await prepareStore()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background { connection.lockAccount() }
+            if phase == .active { Task { await unlockOnOpen() } }
+        }
+        .onChange(of: connection.faceIDLocked) { _, locked in
+            if !locked { automaticUnlockAttempted = false }
+        }
+        .onOpenURL { connection.handleAuthLink($0) }
+    }
+
+    private func unlockOnOpen() async {
+        guard scenePhase == .active, connection.faceIDLocked, !automaticUnlockAttempted else { return }
+        automaticUnlockAttempted = true
+        await connection.unlockAccount()
+    }
+
+    private func prepareStore() async {
+        guard connection.authReady, !KaarisConnection.demoMode else { return }
+        let id = connection.accountID
+        if let current = store {
+            if current.accountID == id { return }
+            store = nil
+            ReminderInbox.shared.destination = nil
+            cleanup = Task { await current.deactivate() }
+        } else if id == nil && cleanup == nil {
+            cleanup = Task { await CoachStore.clearAccountPresentation() }
+        }
+        await cleanup?.value
+        guard !Task.isCancelled, connection.accountID == id else { return }
+        cleanup = nil
+        if let id { store = CoachStore(accountID: id) }
     }
 }
 
@@ -58,11 +128,13 @@ final class NotificationDelegate: NSObject, UIApplicationDelegate, UNUserNotific
     private nonisolated func route(_ request: UNNotificationRequest) async {
         guard request.identifier.hasPrefix(ReminderPlan.identifierPrefix) || request.identifier == ReminderPlan.testIdentifier else { return }
         let info = request.content.userInfo
+        let owner = (info["accountID"] as? String).flatMap(UUID.init(uuidString:))
         let destination = ReminderDestination(
             target: (info["target"] as? String).flatMap(ReminderTarget.init(rawValue:)) ?? .coach,
             sessionID: (info["sessionID"] as? String).flatMap(UUID.init(uuidString:))
         )
         await MainActor.run {
+            ReminderInbox.shared.accountID = owner
             ReminderInbox.shared.destination = destination
         }
     }
@@ -72,6 +144,7 @@ final class NotificationDelegate: NSObject, UIApplicationDelegate, UNUserNotific
 final class ReminderInbox: ObservableObject {
     static let shared = ReminderInbox()
     @Published var destination: ReminderDestination?
+    var accountID: UUID?
 }
 
 enum KaarisTab: String, CaseIterable {
@@ -142,7 +215,7 @@ struct KaarisRoot: View {
             }
         }
         .onAppear {
-            guard ProcessInfo.processInfo.arguments.contains("--demo") else { return }
+            guard store.isDemo else { return }
             for option in KaarisTab.allCases where ProcessInfo.processInfo.arguments.contains("--tab-\(option)") {
                 selection = option
             }
@@ -150,6 +223,7 @@ struct KaarisRoot: View {
         .onChange(of: inbox.destination, initial: true) { _, destination in
             guard let destination, store.hasOnboarded else { return }
             inbox.destination = nil
+            guard inbox.accountID == store.accountID else { return }
             openReminder(destination)
         }
         .onOpenURL { url in

@@ -1,11 +1,12 @@
-// Copie ce fichier dans Local.xcconfig pour un build connecté.
-// Laisse les valeurs vides pour une version locale.
+// Copie ce fichier dans Local.xcconfig et configure Supabase pour la connexion.
+// Une compilation Debug peut lancer l’aperçu local avec --demo.
 // Xcode traite // comme un commentaire. Utilise /$()/ dans les URLs HTTPS.
 // Exemple de format : https:/$()/kaaris.example.com
 KAARIS_API_URL =
 SUPABASE_URL =
 SUPABASE_PUBLISHABLE_KEY =
 
+// La cible iOS active Sign in with Apple par défaut.
 // Active ces deux lignes après avoir associé le même App Group aux deux App IDs.
 // KAARIS_APP_ENTITLEMENTS = Kaaris/Kaaris.entitlements
 // KAARIS_WIDGET_ENTITLEMENTS = KaarisWidget/KaarisWidget.entitlements

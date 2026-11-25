@@ -1,1 +1,2 @@
+KAARIS_APP_ENTITLEMENTS = Kaaris/SignInWithApple.entitlements
 #include? "Local.xcconfig"

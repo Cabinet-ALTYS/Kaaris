@@ -4,7 +4,7 @@ Coach sportif gratuit pour iPhone, en français. Choisis un objectif et 2 à 6 s
 
 ## Essayer le prototype
 
-Ouvrir `ios/Kaaris.xcodeproj`, choisir le schéma **Kaaris** et lancer sur un simulateur iOS 17 ou ultérieur. Ajouter l’argument `--demo` au lancement pour afficher un programme fictif sans connecter de compte. En usage normal, renseigner l’onboarding pour créer son programme.
+Ouvrir `ios/Kaaris.xcodeproj`, choisir le schéma **Kaaris** et lancer sur un simulateur iOS 17 ou ultérieur. Configurer Supabase Auth comme décrit dans le [guide de déploiement](docs/DEPLOIEMENT.md#connexion-au-compte). La connexion est la première étape. Sur les iPhone compatibles, Face ID rouvre le compte après la première connexion. Une compilation Debug accepte `--demo` pour afficher un programme fictif.
 
 - **Plan → Voir les démonstrations** ouvre une bibliothèque de 35 vidéos hors ligne avec Bellami. Le lecteur est également accessible dans chaque fiche, avec 17 vidéos de l’avatar et 18 démonstrations schématiques.
 - Le programme de cinq séances associe deux journées pectoraux et triceps, deux biceps, une jambes et abdos et un travail du dos le premier jour biceps. Il utilise les haltères ou les machines et prépare deux semaines de créneaux, puis les complète à l’ouverture de l’app. Les profils existants peuvent l’activer depuis Plan.

@@ -63,6 +63,16 @@ Si la mémoire manque ou que la latence fait basculer la majorité des requêtes
 
 Pour désactiver l’inférence, vider `INFERENCE_ORIGIN`, recréer l’API avec `docker compose up -d --force-recreate api`, puis arrêter le conteneur du modèle avec `docker compose --profile model stop inference`.
 
+## Connexion au compte
+
+La version iOS utilise directement Supabase Auth. Renseigner `SUPABASE_URL` et `SUPABASE_PUBLISHABLE_KEY` dans `ios/Local.xcconfig`. La présence de `KAARIS_API_URL` active aussi les intégrations du serveur, dont Google Agenda. Le serveur KAARIS ne participe pas à la connexion à l’application.
+
+- **E-mail.** Activer l’inscription et la confirmation des adresses. Ajouter `kaaris://email-confirmed` à la liste des URL de redirection autorisées. Après confirmation, l’utilisateur se connecte dans l’app. Configurer un SMTP transactionnel pour les adresses hors équipe Supabase. [SMTP Supabase](https://supabase.com/docs/guides/auth/auth-smtp)
+- **Google.** Déclarer un client OAuth de type Application Web dans Google Auth Platform, avec l’URL de rappel `https://<référence>.supabase.co/auth/v1/callback`. Activer Google dans Supabase Auth et ajouter `kaaris://auth-callback` aux URL de redirection autorisées. L’app utilise PKCE. Le client de connexion n’a besoin que des données d’identité. [Google dans Supabase](https://supabase.com/docs/guides/auth/social-sign-in/auth-google)
+- **Apple.** Activer Sign in with Apple sur l’App ID `com.kaariscoach.ios`, signer avec le profil qui inclut la capacité et ajouter cet App ID aux identifiants autorisés dans Supabase Auth. Le flux iOS échange le jeton d’identité et le nonce avec Supabase. [Apple natif dans Supabase](https://supabase.com/docs/guides/auth/social-sign-in/auth-apple)
+
+Recette iPhone. Vérifier l’écran de connexion au premier lancement, l’inscription et la confirmation par e-mail, les deux fournisseurs, puis le retour à l’app via Face ID sur un appareil inscrit. Vérifier la reconnexion en cas de refus, le retour après mise en arrière-plan et le passage d’un compte à l’autre. Les profils sportifs, programmes et journaux sont locaux et distincts par compte. Les anciens profils créés avant la connexion obligatoire restent sur l’appareil sans être associés automatiquement à un compte.
+
 ## Contrat API
 
 Toutes les routes privées attendent `Authorization: Bearer <access_token Supabase Auth>`. Les POST de données attendent `Content-Type: application/json`.

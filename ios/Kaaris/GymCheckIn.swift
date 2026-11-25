@@ -3,15 +3,18 @@ import SwiftUI
 
 struct GymCheckInSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("kaaris.gym.coordinate.v1") private var gymData = Data()
+    @EnvironmentObject private var store: CoachStore
     @StateObject private var location = GymLocationReader()
     @State private var feedback: String?
     @State private var showGymOptions = false
 
     let onConfirmed: () -> Void
 
-    private var isDemo: Bool { ProcessInfo.processInfo.arguments.contains("--demo") }
-    private var gym: GymCoordinate? { isDemo ? nil : try? JSONDecoder().decode(GymCoordinate.self, from: gymData) }
+    private var isDemo: Bool { store.isDemo }
+    private var gym: GymCoordinate? {
+        guard let data = store.gymCoordinateData else { return nil }
+        return try? JSONDecoder().decode(GymCoordinate.self, from: data)
+    }
 
     var body: some View {
         KPage {
@@ -20,7 +23,7 @@ struct GymCheckInSheet: View {
             Text(isDemo ? "Déclare ton arrivée pour tester le pointage." : "Tu peux déclarer ton arrivée ou vérifier que tu es à 200 m ou moins de ta salle. La position est demandée à ton clic. Le repère de salle est enregistré sur cet iPhone.")
                 .foregroundStyle(muted)
 
-            if !isDemo {
+            if store.accountID != nil {
                 VStack(alignment: .leading, spacing: 12) {
                     Label(gym == nil ? "Aucune salle enregistrée" : "Salle enregistrée", systemImage: "mappin.circle")
                         .font(.headline)
@@ -56,7 +59,7 @@ struct GymCheckInSheet: View {
         .confirmationDialog("Gérer la salle enregistrée", isPresented: $showGymOptions, titleVisibility: .visible) {
             Button("Remplacer par ma position") { saveGym() }
             Button("Réinitialiser le repère", role: .destructive) {
-                gymData = Data()
+                store.gymCoordinateData = nil
                 feedback = "Le repère a été effacé de cet iPhone."
             }
             Button("Annuler", role: .cancel) { }
@@ -73,7 +76,7 @@ struct GymCheckInSheet: View {
             case .success(let position):
                 let coordinate = GymCoordinate(latitude: position.coordinate.latitude, longitude: position.coordinate.longitude)
                 if let data = try? JSONEncoder().encode(coordinate) {
-                    gymData = data
+                    store.gymCoordinateData = data
                     feedback = "Salle enregistrée. Tu peux vérifier ta présence."
                 } else {
                     feedback = "Le repère n’a pas pu être enregistré. Réessaie."

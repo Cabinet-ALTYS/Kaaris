@@ -14,6 +14,7 @@
     <key>CFBundleURLTypes</key><array><dict><key>CFBundleURLSchemes</key><array><string>kaaris</string></array></dict></array>
     <key>ITSAppUsesNonExemptEncryption</key><false/>
     <key>LSRequiresIPhoneOS</key><true/>
+    <key>NSFaceIDUsageDescription</key><string>Utilise Face ID pour rouvrir ton compte et ton programme KAARIS sur cet iPhone.</string>
     <key>NSLocationWhenInUseUsageDescription</key><string>KAARIS utilise ta position quand tu demandes à enregistrer ta salle ou à vérifier ta proximité.</string>
     <key>NSMicrophoneUsageDescription</key><string>KAARIS utilise le microphone quand tu actives la dictée du coach.</string>
     <key>NSSpeechRecognitionUsageDescription</key><string>KAARIS transcrit la dictée du coach sur cet appareil.</string>

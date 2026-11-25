@@ -264,6 +264,24 @@ struct SettingsScreen: View {
             }
             .kPanel()
 
+            if !store.isDemo {
+                VStack(alignment: .leading, spacing: 10) {
+                    SectionLabel(text: "COMPTE")
+                    if let email = connection.accountEmail {
+                        Text(email).font(.subheadline).textSelection(.enabled)
+                    }
+                    if connection.faceIDEnabled {
+                        Label("Face ID activé", systemImage: "faceid")
+                            .font(.subheadline)
+                    }
+                    Button("Se déconnecter") { Task { await connection.logout() } }
+                        .buttonStyle(ActionStyle(filled: false))
+                    if let notice = connection.authNotice {
+                        Text(notice).font(.footnote).foregroundStyle(muted)
+                    }
+                }
+                .kPanel()
+            }
             NavigationLink { AgendaScreen() } label: { Label("Google Agenda", systemImage: "calendar") }
                 .buttonStyle(ActionStyle(filled: false))
 
@@ -277,11 +295,6 @@ struct SettingsScreen: View {
                     Text("À ta demande, le coach en ligne reçoit le type de check-in et tes réglages de ton.")
                         .font(.footnote)
                         .foregroundStyle(muted)
-                    if !connection.isSignedIn {
-                        Text("Connecte-toi à ton compte KAARIS depuis Google Agenda.")
-                            .font(.footnote)
-                            .foregroundStyle(muted)
-                    }
                 }
                 .kPanel()
             }
@@ -295,10 +308,6 @@ struct SettingsScreen: View {
                     .disabled(!connection.isSignedIn)
                     Text("Quand tu réponds à l’appel du coach ou que tu l’écoutes, des phrases prédéfinies sont envoyées à ElevenLabs pour générer la voix. Tes réponses restent dans l’app.")
                         .font(.footnote).foregroundStyle(muted)
-                    if !connection.isSignedIn {
-                        Text("Connecte-toi à ton compte KAARIS depuis Google Agenda.")
-                            .font(.footnote).foregroundStyle(muted)
-                    }
                 }
                 .kPanel()
             }
@@ -372,8 +381,9 @@ struct SettingsScreen: View {
         }
         var withoutQuietHours = preferences
         withoutQuietHours.quietEndHour = withoutQuietHours.quietStartHour
-        if ReminderPlan.make(sessions: store.sessions, preferences: preferences, now: now).isEmpty,
-           !ReminderPlan.make(sessions: store.sessions, preferences: withoutQuietHours, now: now).isEmpty {
+        let alreadyDue = store.remindersAlreadyDue(at: now)
+        if ReminderPlan.make(sessions: store.sessions, preferences: preferences, now: now, alreadyDue: alreadyDue).isEmpty,
+           !ReminderPlan.make(sessions: store.sessions, preferences: withoutQuietHours, now: now, alreadyDue: alreadyDue).isEmpty {
             return "Les prochaines relances tombent pendant les heures de silence."
         }
         return nil

@@ -1,5 +1,7 @@
 import AuthenticationServices
+import CryptoKit
 import Foundation
+import LocalAuthentication
 import Security
 import SwiftUI
 import UIKit
@@ -27,12 +29,15 @@ private struct AgendaConfiguration {
 
 private enum AgendaError: LocalizedError {
     case unavailable, signedOut, keychain, invalidResponse, googleConsent, staleProposal
+    case googleSignInUnavailable, identityCallback
     case http(Int, String?)
 
     var errorDescription: String? {
         switch self {
         case .unavailable: return "La connexion est indisponible dans cette version."
-        case .signedOut: return "Connecte-toi pour utiliser Google Agenda."
+        case .signedOut: return "Reconnecte-toi à ton compte KAARIS."
+        case .googleSignInUnavailable: return "La connexion Google n’est pas encore disponible. Tu peux te connecter par e-mail."
+        case .identityCallback: return "La connexion n’a pas abouti. Relance-la depuis KAARIS."
         case .keychain: return "Le trousseau iOS est indisponible. Réessaie après avoir déverrouillé l’iPhone."
         case .invalidResponse: return "Le service a renvoyé une réponse inattendue. Réessaie dans un instant."
         case .googleConsent: return "La connexion Google n’a pas abouti. Tu peux relancer l’autorisation."
@@ -43,6 +48,8 @@ private enum AgendaError: LocalizedError {
                 return "Confirme ton adresse dans l’e-mail reçu, puis connecte-toi."
             case (_, "invalid_credentials"):
                 return "L’adresse ou le mot de passe est incorrect."
+            case (_, "provider_disabled"), (_, "validation_failed"):
+                return "Ce mode de connexion n’est pas disponible. Essaie l’e-mail."
             case (_, "weak_password"):
                 return "Choisis un mot de passe plus long et difficile à deviner."
             case (_, "user_already_exists"), (_, "email_exists"):
@@ -113,6 +120,7 @@ private struct AgendaSession: Codable, Sendable {
     let refreshToken: String
     let expiresAt: Date
     let email: String?
+    let userID: UUID?
 }
 
 private struct AgendaSessionKeychain {
@@ -163,8 +171,14 @@ private struct AgendaSessionKeychain {
 }
 
 private struct AgendaAuthAPI {
+    static let googleRedirect = "kaaris://auth-callback"
+    static let emailRedirect = "kaaris://email-confirmed"
+
     struct Response: Decodable {
-        struct User: Decodable { let email: String? }
+        struct User: Decodable {
+            let id: UUID
+            let email: String?
+        }
         let accessToken: String?
         let refreshToken: String?
         let expiresAt: TimeInterval?
@@ -179,16 +193,18 @@ private struct AgendaAuthAPI {
             case user
         }
 
-        func session(fallbackEmail: String?) throws -> AgendaSession? {
+        func session(fallbackEmail: String?, fallbackUserID: UUID? = nil) throws -> AgendaSession? {
             guard let accessToken, let refreshToken else { return nil }
             guard !accessToken.isEmpty, !refreshToken.isEmpty,
-                  let expiry = expiresAt ?? expiresIn.map({ Date.now.timeIntervalSince1970 + $0 })
+                  let expiry = expiresAt ?? expiresIn.map({ Date.now.timeIntervalSince1970 + $0 }),
+                  let userID = user?.id ?? fallbackUserID
             else { throw AgendaError.invalidResponse }
             return AgendaSession(
                 accessToken: accessToken,
                 refreshToken: refreshToken,
                 expiresAt: Date(timeIntervalSince1970: expiry),
-                email: user?.email ?? fallbackEmail
+                email: user?.email ?? fallbackEmail,
+                userID: userID
             )
         }
     }
@@ -199,13 +215,67 @@ private struct AgendaAuthAPI {
     func authenticate(email: String, password: String, signUp: Bool) async throws -> AgendaSession? {
         let data = try await request(
             path: signUp ? "signup" : "token",
-            query: signUp ? nil : URLQueryItem(name: "grant_type", value: "password"),
+            query: signUp ? URLQueryItem(name: "redirect_to", value: Self.emailRedirect)
+                : URLQueryItem(name: "grant_type", value: "password"),
             body: ["email": email, "password": password]
         )
         let response = try JSONDecoder().decode(Response.self, from: data)
         let session = try response.session(fallbackEmail: email)
         if session == nil && !signUp { throw AgendaError.invalidResponse }
         return session
+    }
+
+    func googleAuthorization() async throws -> (url: URL, verifier: String) {
+        struct Settings: Decodable { let external: [String: Bool] }
+        let endpoint = url.appending(path: "auth/v1/settings")
+        let data = try await send(to: endpoint, method: "GET")
+        guard try JSONDecoder().decode(Settings.self, from: data).external["google"] == true else {
+            throw AgendaError.googleSignInUnavailable
+        }
+        var bytes = [UInt8](repeating: 0, count: 32)
+        guard SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes) == errSecSuccess else {
+            throw AgendaError.identityCallback
+        }
+        let verifier = Self.base64URL(Data(bytes))
+        let challenge = Self.base64URL(Data(SHA256.hash(data: Data(verifier.utf8))))
+        var components = URLComponents(url: url.appending(path: "auth/v1/authorize"), resolvingAgainstBaseURL: false)
+        components?.queryItems = [
+            URLQueryItem(name: "provider", value: "google"),
+            URLQueryItem(name: "redirect_to", value: Self.googleRedirect),
+            URLQueryItem(name: "code_challenge", value: challenge),
+            URLQueryItem(name: "code_challenge_method", value: "s256")
+        ]
+        guard let target = components?.url else { throw AgendaError.identityCallback }
+        return (target, verifier)
+    }
+
+    func exchangeGoogle(code: String, verifier: String) async throws -> AgendaSession {
+        try await exchange(grant: "pkce", body: ["auth_code": code, "code_verifier": verifier])
+    }
+
+    func signInWithApple(idToken: String, nonce: String) async throws -> AgendaSession {
+        try await exchange(grant: "id_token", body: ["provider": "apple", "id_token": idToken, "nonce": nonce])
+    }
+
+    func identify(_ session: AgendaSession) async throws -> AgendaSession {
+        if session.expiresAt.timeIntervalSinceNow <= 60 { return try await refresh(session) }
+        let data = try await send(to: url.appending(path: "auth/v1/user"), token: session.accessToken, method: "GET")
+        let user = try JSONDecoder().decode(Response.User.self, from: data)
+        return AgendaSession(accessToken: session.accessToken, refreshToken: session.refreshToken,
+                             expiresAt: session.expiresAt, email: user.email ?? session.email, userID: user.id)
+    }
+
+    private func exchange(grant: String, body: [String: String]) async throws -> AgendaSession {
+        let data = try await request(path: "token", query: URLQueryItem(name: "grant_type", value: grant), body: body)
+        guard let session = try JSONDecoder().decode(Response.self, from: data).session(fallbackEmail: nil) else {
+            throw AgendaError.invalidResponse
+        }
+        return session
+    }
+
+    private static func base64URL(_ data: Data) -> String {
+        data.base64EncodedString().replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "=", with: "")
     }
 
     func refresh(_ session: AgendaSession) async throws -> AgendaSession {
@@ -215,7 +285,8 @@ private struct AgendaAuthAPI {
             body: ["refresh_token": session.refreshToken]
         )
         let response = try JSONDecoder().decode(Response.self, from: data)
-        guard let refreshed = try response.session(fallbackEmail: session.email) else {
+        guard let refreshed = try response.session(fallbackEmail: session.email, fallbackUserID: session.userID),
+              session.userID == nil || refreshed.userID == session.userID else {
             throw AgendaError.invalidResponse
         }
         return refreshed
@@ -246,9 +317,9 @@ private struct AgendaAuthAPI {
         return try await send(to: url, body: body, token: token)
     }
 
-    private func send(to url: URL, body: [String: String]?, token: String?) async throws -> Data {
+    private func send(to url: URL, body: [String: String]? = nil, token: String? = nil, method: String = "POST") async throws -> Data {
         var request = URLRequest(url: url, timeoutInterval: 20)
-        request.httpMethod = "POST"
+        request.httpMethod = method
         request.setValue(publishableKey, forHTTPHeaderField: "apikey")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         if let token { request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") }
@@ -489,9 +560,16 @@ private final class CalendarConsent: NSObject, ASWebAuthenticationPresentationCo
         guard url.scheme == "https", url.host == "accounts.google.com" else {
             throw AgendaError.googleConsent
         }
+        let callback = try await callback(for: url)
+        guard callback.scheme == "kaaris", callback.host == "google-connected",
+              URLComponents(url: callback, resolvingAgainstBaseURL: false)?.queryItems?
+                .first(where: { $0.name == "status" })?.value == "connected"
+        else { throw AgendaError.googleConsent }
+    }
 
+    func callback(for url: URL) async throws -> URL {
         defer { session = nil }
-        let callback: URL = try await withCheckedThrowingContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             let authentication = ASWebAuthenticationSession(url: url, callbackURLScheme: "kaaris") { url, error in
                 if let url {
                     continuation.resume(returning: url)
@@ -504,10 +582,6 @@ private final class CalendarConsent: NSObject, ASWebAuthenticationPresentationCo
             if !authentication.start() { continuation.resume(throwing: AgendaError.googleConsent) }
         }
 
-        guard callback.scheme == "kaaris", callback.host == "google-connected",
-              URLComponents(url: callback, resolvingAgainstBaseURL: false)?.queryItems?
-                .first(where: { $0.name == "status" })?.value == "connected"
-        else { throw AgendaError.googleConsent }
     }
 
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
@@ -528,15 +602,39 @@ final class KaarisConnection: ObservableObject {
     @Published fileprivate private(set) var proposal: AgendaProposal?
     @Published fileprivate private(set) var working = false
     @Published fileprivate private(set) var notice: String?
+    @Published private(set) var authWorking = false
+    @Published private(set) var authNotice: String?
+    @Published private(set) var authReady = false
+    @Published private(set) var faceIDLocked = false
+    @Published private(set) var unlocking = false
+    @Published private(set) var unlockNotice: String?
 
     private let configuration = AgendaConfiguration()
     private let consent = CalendarConsent()
-    private let demo = ProcessInfo.processInfo.arguments.contains("--demo")
-    private var restored = false
+    private let identityBrowser = CalendarConsent()
+    private var restoreStarted = false
+    private var generation = 0
+    private var pendingRefresh: (id: UUID, task: Task<AgendaSession, Error>)?
+    private var biometricContext: LAContext?
 
-    fileprivate var authConfigured: Bool { !demo && auth != nil }
+    static var demoMode: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("--demo")
+        #else
+        false
+        #endif
+    }
+
+    private var demo: Bool { Self.demoMode }
+    var authConfigured: Bool { !demo && auth != nil }
     fileprivate var googleConfigured: Bool { !demo && configuration.apiURL != nil }
-    var isSignedIn: Bool { session != nil }
+    var isSignedIn: Bool { accountID != nil && !faceIDLocked }
+    var accountID: UUID? { session?.userID }
+    var accountEmail: String? { session?.email }
+    var faceIDEnabled: Bool {
+        guard let accountID else { return false }
+        return UserDefaults.standard.bool(forKey: Self.faceIDKey(for: accountID))
+    }
     var coachConfigured: Bool { authConfigured && googleConfigured }
     var voiceConfigured: Bool { coachConfigured }
 
@@ -549,53 +647,181 @@ final class KaarisConnection: ObservableObject {
         configuration.supabaseURL.map { AgendaSessionKeychain(project: $0) }
     }
 
-    func restoreAccount() {
-        try? loadAccount()
+    func restoreAccount() async {
+        guard !restoreStarted else { return }
+        restoreStarted = true
+        defer { authReady = true }
+        guard !demo, let keychain, let auth else { return }
+        do {
+            guard let saved = try keychain.load() else { return }
+            if saved.userID == nil {
+                let verified = try await auth.identify(saved)
+                try install(verified, lock: true)
+            } else if saved.expiresAt <= .now, !requiresFaceID(saved.userID) {
+                try install(try await auth.refresh(saved), lock: true)
+            } else {
+                try install(saved, lock: true)
+            }
+        } catch let error as AgendaError {
+            if case .http(let status, _) = error, status == 400 || status == 401 || status == 403 {
+                try? keychain.clear()
+            }
+            authNotice = error.localizedDescription
+        } catch {
+            authNotice = "La session n’a pas pu être restaurée. Connecte-toi ou vérifie le réseau."
+        }
     }
 
-    private func loadAccount() throws {
-        guard !demo, !restored else { return }
-        if let keychain { session = try keychain.load() }
-        restored = true
+    private static func faceIDKey(for id: UUID) -> String {
+        "kaaris.auth.face-id.\(id.uuidString)"
+    }
+
+    private func requiresFaceID(_ id: UUID?) -> Bool {
+        guard let id else { return false }
+        let context = LAContext()
+        var error: NSError?
+        let available = context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
+        if context.biometryType == .faceID && (available || error?.code == LAError.Code.biometryLockout.rawValue) {
+            UserDefaults.standard.set(true, forKey: Self.faceIDKey(for: id))
+        }
+        return UserDefaults.standard.bool(forKey: Self.faceIDKey(for: id))
+    }
+
+    private func install(_ newSession: AgendaSession, lock: Bool = false) throws {
+        guard let id = newSession.userID, let keychain else { throw AgendaError.invalidResponse }
+        try keychain.save(newSession)
+        let protected = requiresFaceID(id)
+        faceIDLocked = lock && protected
+        session = newSession
+    }
+
+    func lockAccount() {
+        guard !faceIDLocked, requiresFaceID(accountID) else { return }
+        unlockNotice = nil
+        faceIDLocked = true
+    }
+
+    func unlockAccount() async {
+        guard faceIDLocked, !unlocking, let id = accountID else { return }
+        let attempt = generation
+        unlocking = true
+        unlockNotice = nil
+        defer {
+            biometricContext = nil
+            unlocking = false
+        }
+        let context = LAContext()
+        var error: NSError?
+        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error),
+              context.biometryType == .faceID else {
+            unlockNotice = "Face ID est indisponible. Tu peux te reconnecter à ton compte."
+            return
+        }
+        context.localizedFallbackTitle = ""
+        biometricContext = context
+        do {
+            guard try await context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics,
+                                                   localizedReason: "Déverrouiller ton compte et ton programme KAARIS."),
+                  generation == attempt, accountID == id else { return }
+            _ = try await accessToken()
+            guard generation == attempt, accountID == id else { return }
+            faceIDLocked = false
+        } catch let error as LAError {
+            if error.code != .userCancel && error.code != .appCancel {
+                unlockNotice = "Face ID n’a pas abouti. Réessaie ou reconnecte-toi."
+            }
+        } catch {
+            unlockNotice = "La session n’a pas pu être actualisée. Vérifie le réseau ou reconnecte-toi."
+        }
     }
 
     fileprivate func restore() async {
         await perform {
-            try loadAccount()
-            if session != nil, googleConfigured { try await updateGoogleStatus() }
+            if isSignedIn, googleConfigured { try await updateGoogleStatus() }
         }
     }
 
-    fileprivate func authenticate(email: String, password: String, signUp: Bool) async {
-        await perform {
-            guard let auth, let keychain else { throw AgendaError.unavailable }
+    func authenticate(email: String, password: String, signUp: Bool) async {
+        await authenticate {
+            guard let auth else { throw AgendaError.unavailable }
             guard let newSession = try await auth.authenticate(email: email, password: password, signUp: signUp) else {
-                notice = "Vérifie tes e-mails pour confirmer l’inscription, puis connecte-toi."
+                authNotice = "Vérifie tes e-mails pour confirmer l’inscription, puis connecte-toi."
                 return
             }
-            try keychain.save(newSession)
-            restored = true
-            session = newSession
-            if googleConfigured { try await updateGoogleStatus() }
+            try install(newSession)
         }
     }
 
-    fileprivate func logout() async {
-        await perform {
-            guard let auth, let keychain else { throw AgendaError.unavailable }
-            let token = try? await accessToken()
-            try keychain.clear()
-            session = nil
-            resetGoogle()
-            if let token {
-                do {
-                    try await auth.logout(token: token)
-                } catch {
-                    notice = "Déconnecté sur cet iPhone. La fin de session côté serveur n’a pas pu être confirmée."
-                }
-            } else {
-                notice = "Déconnecté sur cet iPhone."
+    func signInWithGoogle() async {
+        await authenticate {
+            guard let auth else { throw AgendaError.unavailable }
+            let flow = try await auth.googleAuthorization()
+            let callback = try await identityBrowser.callback(for: flow.url)
+            guard callback.scheme == "kaaris", callback.host == "auth-callback",
+                  callback.path.isEmpty, callback.fragment == nil,
+                  let parameters = URLComponents(url: callback, resolvingAgainstBaseURL: false)?.queryItems,
+                  !parameters.contains(where: { $0.name == "error" || $0.name == "error_code" })
+            else { throw AgendaError.identityCallback }
+            let codes = parameters.filter { $0.name == "code" }
+            guard codes.count == 1, let code = codes.first?.value, !code.isEmpty else {
+                throw AgendaError.identityCallback
             }
+            try install(try await auth.exchangeGoogle(code: code, verifier: flow.verifier))
+        }
+    }
+
+    func signInWithApple(idToken: String, nonce: String) async {
+        await authenticate {
+            guard let auth, !idToken.isEmpty, !nonce.isEmpty else { throw AgendaError.unavailable }
+            try install(try await auth.signInWithApple(idToken: idToken, nonce: nonce))
+        }
+    }
+
+    func handleAuthLink(_ url: URL) {
+        guard session == nil, url.scheme == "kaaris", url.host == "email-confirmed" else { return }
+        authNotice = "Si tu as confirmé ton adresse, connecte-toi avec ton e-mail et ton mot de passe."
+    }
+
+    func logout() async {
+        guard !authWorking, let auth, let keychain else { return }
+        let token = session?.accessToken
+        do {
+            try keychain.clear()
+        } catch {
+            unlockNotice = error.localizedDescription
+            authNotice = error.localizedDescription
+            return
+        }
+        resetAccount()
+        authNotice = nil
+        if let token { try? await auth.logout(token: token) }
+    }
+
+    private func resetAccount() {
+        generation += 1
+        pendingRefresh?.task.cancel()
+        pendingRefresh = nil
+        biometricContext?.invalidate()
+        session = nil
+        faceIDLocked = false
+        resetGoogle()
+    }
+
+    private func authenticate(_ operation: () async throws -> Void) async {
+        guard authReady, session == nil, !authWorking else { return }
+        authWorking = true
+        authNotice = nil
+        defer { authWorking = false }
+        do {
+            try await operation()
+        } catch let error as ASWebAuthenticationSessionError where error.code == .canceledLogin {
+            authNotice = "Connexion Google annulée."
+        } catch let error as AgendaError {
+            authNotice = error.localizedDescription
+        } catch is URLError {
+            authNotice = "Connexion interrompue. Vérifie le réseau puis réessaie."
+        } catch {
+            authNotice = AgendaError.identityCallback.localizedDescription
         }
     }
 
@@ -811,18 +1037,35 @@ final class KaarisConnection: ObservableObject {
             return session.accessToken
         }
         guard let auth, let keychain else { throw AgendaError.unavailable }
+        let attempt = generation
+        let refresh: (id: UUID, task: Task<AgendaSession, Error>)
+        if let pendingRefresh {
+            refresh = pendingRefresh
+        } else {
+            refresh = (UUID(), Task { try await auth.refresh(session) })
+            pendingRefresh = refresh
+        }
         do {
             // Keep the rotated refresh token even if a view cancels its own request mid-refresh.
-            let refresh = Task { try await auth.refresh(session) }
-            let renewed = try await refresh.value
-            try keychain.save(renewed)
-            self.session = renewed
-            return renewed.accessToken
+            let renewed = try await refresh.task.value
+            guard attempt == generation, let current = self.session else { throw AgendaError.signedOut }
+            if pendingRefresh?.id == refresh.id {
+                try keychain.save(renewed)
+                self.session = renewed
+                pendingRefresh = nil
+                return renewed.accessToken
+            }
+            return current.accessToken
         } catch let AgendaError.http(status, _) where status == 400 || status == 401 || status == 403 {
-            try keychain.clear()
-            self.session = nil
-            resetGoogle()
+            if attempt == generation, pendingRefresh?.id == refresh.id {
+                try? keychain.clear()
+                resetAccount()
+                authNotice = "Ta session a expiré. Reconnecte-toi à KAARIS."
+            }
             throw AgendaError.signedOut
+        } catch {
+            if attempt == generation, pendingRefresh?.id == refresh.id { pendingRefresh = nil }
+            throw error
         }
     }
 
@@ -834,22 +1077,30 @@ final class KaarisConnection: ObservableObject {
         accept: String = "application/json"
     ) async throws -> Data {
         guard !demo, let url = configuration.apiURL else { throw AgendaError.unavailable }
+        guard isSignedIn else { throw AgendaError.signedOut }
+        let attempt = generation
         try Task.checkCancellation()
         let api = KaarisAPI(rootURL: url)
         let token = try await accessToken()
         try Task.checkCancellation()
         do {
-            return try await api.send(path, method: method, body: body, token: token, timeout: timeout, accept: accept)
+            let data = try await api.send(path, method: method, body: body, token: token, timeout: timeout, accept: accept)
+            guard attempt == generation, isSignedIn else { throw CancellationError() }
+            return data
         } catch let AgendaError.http(status, _) where status == 401 {
             try Task.checkCancellation()
+            guard attempt == generation, isSignedIn else { throw CancellationError() }
             let renewed = try await accessToken(replacing: token)
             try Task.checkCancellation()
-            return try await api.send(path, method: method, body: body, token: renewed, timeout: timeout, accept: accept)
+            let data = try await api.send(path, method: method, body: body, token: renewed, timeout: timeout, accept: accept)
+            guard attempt == generation, isSignedIn else { throw CancellationError() }
+            return data
         }
     }
 
     private func perform(_ operation: () async throws -> Void) async {
         guard !demo, !working else { return }
+        let attempt = generation
         working = true
         notice = nil
         defer { working = false }
@@ -858,8 +1109,10 @@ final class KaarisConnection: ObservableObject {
             try await operation()
         } catch is CancellationError {
         } catch let error as ASWebAuthenticationSessionError where error.code == .canceledLogin {
+            guard attempt == generation else { return }
             notice = "Connexion Google annulée."
         } catch let error as AgendaError {
+            guard attempt == generation else { return }
             if case let .http(_, code) = error,
                code == "google_reconnect_required" || code == "google_connection_required" {
                 resetGoogle()
@@ -868,8 +1121,10 @@ final class KaarisConnection: ObservableObject {
             notice = error.localizedDescription
         } catch let error as URLError where error.code == .cancelled {
         } catch is URLError {
+            guard attempt == generation else { return }
             notice = "Connexion au service interrompue. Vérifie le réseau puis réessaie."
         } catch {
+            guard attempt == generation else { return }
             notice = AgendaError.invalidResponse.localizedDescription
         }
     }
@@ -896,9 +1151,6 @@ struct AgendaScreen: View {
 
     @EnvironmentObject private var store: CoachStore
     @EnvironmentObject private var model: KaarisConnection
-    @State private var email = ""
-    @State private var password = ""
-    @State private var signUp = false
     @State private var confirmation: Confirmation?
 
     var body: some View {
@@ -910,7 +1162,6 @@ struct AgendaScreen: View {
                         .foregroundStyle(.secondary)
                 }
             } else {
-                if model.authConfigured { accountCard }
                 calendarCard
                 if let proposal = model.proposal { proposalCard(proposal) }
 
@@ -950,54 +1201,6 @@ struct AgendaScreen: View {
             Button("Annuler", role: .cancel) {}
         } message: { action in
             Text(action.message)
-        }
-    }
-
-    private var accountCard: some View {
-        card("Compte KAARIS", icon: "person.crop.circle") {
-            if let session = model.session {
-                if let email = session.email {
-                    Text(email).textSelection(.enabled)
-                }
-                Button("Se déconnecter") {
-                    Task { await model.logout() }
-                }
-                .buttonStyle(.bordered)
-                .tint(.white)
-                .disabled(model.working)
-            } else {
-                TextField("Adresse e-mail", text: $email)
-                    .textContentType(.emailAddress)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-                    .keyboardType(.emailAddress)
-                    .padding(12)
-                    .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 10))
-                SecureField("Mot de passe", text: $password)
-                    .textContentType(signUp ? .newPassword : .password)
-                    .padding(12)
-                    .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 10))
-
-                primaryButton(signUp ? "Créer un compte" : "Me connecter", icon: "arrow.right") {
-                    Task {
-                        await model.authenticate(
-                            email: email.trimmingCharacters(in: .whitespacesAndNewlines),
-                            password: password,
-                            signUp: signUp
-                        )
-                        password = ""
-                    }
-                }
-                .disabled(model.working || !email.contains("@") || password.isEmpty)
-
-                Button(signUp ? "J’ai déjà un compte" : "Créer un compte KAARIS") {
-                    signUp.toggle()
-                    password = ""
-                }
-                .font(.subheadline.weight(.semibold))
-                .tint(acid)
-                .disabled(model.working)
-            }
         }
     }
 

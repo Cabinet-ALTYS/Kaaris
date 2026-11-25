@@ -184,19 +184,28 @@ final class CoachStore: ObservableObject {
     @Published private(set) var hasOnboarded: Bool { didSet { save() } }
     @Published private(set) var notificationDelivery = ReminderDelivery.initial
     @Published private(set) var workoutLogs: [UUID: WorkoutLog] = [:]
+    @Published var gymCoordinateData: Data? { didSet { save() } }
 
+    let accountID: UUID?
     let isDemo: Bool
     private let defaults: UserDefaults
-    private let scheduler = ReminderScheduler()
-    private static let storageKey = "kaaris.coach.v1"
+    private let scheduler: ReminderScheduler
+    private let storageKey: String?
+    private var active = true
+    private var deactivation: Task<Void, Never>?
     private var nextPriorityWeek: Date?
 
     init(
-        demo: Bool = ProcessInfo.processInfo.arguments.contains("--demo"),
+        accountID: UUID? = nil,
+        demo: Bool = false,
         defaults: UserDefaults = .standard
     ) {
+        let accountID = demo ? nil : accountID
+        self.accountID = accountID
         isDemo = demo
         self.defaults = defaults
+        scheduler = ReminderScheduler(accountID: accountID, defaults: defaults)
+        storageKey = accountID.map { "kaaris.coach.v2.\($0.uuidString)" }
 
         if demo {
             var demoProfile = CoachProfile()
@@ -226,7 +235,7 @@ final class CoachStore: ObservableObject {
             }
             sessions = demoSessions
             hasOnboarded = true
-        } else if let data = defaults.data(forKey: Self.storageKey),
+        } else if let storageKey, let data = defaults.data(forKey: storageKey),
                   let snapshot = try? JSONDecoder().decode(Snapshot.self, from: data) {
             profile = snapshot.profile
             preferences = snapshot.preferences
@@ -234,6 +243,7 @@ final class CoachStore: ObservableObject {
             hasOnboarded = snapshot.hasOnboarded
             workoutLogs = snapshot.workoutLogs ?? [:]
             nextPriorityWeek = snapshot.nextPriorityWeek
+            gymCoordinateData = snapshot.gymCoordinateData
         } else {
             profile = CoachProfile()
             preferences = CoachPreferences()
@@ -370,57 +380,90 @@ final class CoachStore: ObservableObject {
     }
 
     func refreshReminders(clearBluntDelivery: Bool = false) {
-        guard !isDemo else { return }
+        guard active, accountID != nil else { return }
         scheduler.replace(sessions: sessions, preferences: preferences, clearBluntDelivery: clearBluntDelivery) { [weak self] delivery in
-            self?.notificationDelivery = delivery
+            guard let self, self.active else { return }
+            self.notificationDelivery = delivery
         }
         publishWidget()
     }
 
     func updateNotificationDelivery() async {
-        notificationDelivery = isDemo ? .demo : await scheduler.settledDelivery()
+        if isDemo {
+            notificationDelivery = .demo
+            return
+        }
+        guard active, accountID != nil else { return }
+        let delivery = await scheduler.settledDelivery()
+        if active { notificationDelivery = delivery }
     }
 
     @discardableResult
     func requestNotifications() async -> Bool {
-        guard !isDemo else { return false }
+        guard active, accountID != nil else { return false }
         let authorized = await scheduler.requestPermission()
+        guard active else { return false }
         preferences.remindersEnabled = authorized
         await updateNotificationDelivery()
-        return authorized
+        return active && authorized
     }
 
     @discardableResult
     func sendTestNotification() async -> Bool {
-        guard !isDemo else { return false }
-        if await scheduler.deliverySettings().authorization == .notRequested,
-           !(await scheduler.requestPermission()) {
+        guard active, accountID != nil else { return false }
+        let settings = await scheduler.deliverySettings()
+        guard active else { return false }
+        if settings.authorization == .notRequested, !(await scheduler.requestPermission()) {
             await updateNotificationDelivery()
             return false
         }
+        guard active else { return false }
         let sent = await scheduler.sendTest()
         await updateNotificationDelivery()
-        return sent
+        return active && sent
+    }
+
+    func remindersAlreadyDue(at date: Date) -> [Date] {
+        scheduler.remindersAlreadyDue(at: date)
+    }
+
+    func deactivate() async {
+        if let deactivation {
+            await deactivation.value
+            return
+        }
+        active = false
+        guard accountID != nil else { return }
+        WidgetSnapshot.clear()
+        let cleanup = Task { await scheduler.deactivate() }
+        deactivation = cleanup
+        await cleanup.value
+    }
+
+    static func clearAccountPresentation() async {
+        WidgetSnapshot.clear()
+        await ReminderScheduler.clearAccountNotifications()
     }
 
     private func save() {
-        guard !isDemo else { return }
+        guard active, let storageKey else { return }
         let snapshot = Snapshot(
             profile: profile,
             preferences: preferences,
             sessions: sessions,
             hasOnboarded: hasOnboarded,
             workoutLogs: workoutLogs,
-            nextPriorityWeek: nextPriorityWeek
+            nextPriorityWeek: nextPriorityWeek,
+            gymCoordinateData: gymCoordinateData
         )
         if let data = try? JSONEncoder().encode(snapshot) {
-            defaults.set(data, forKey: Self.storageKey)
+            defaults.set(data, forKey: storageKey)
         }
         publishWidget()
     }
 
     private func publishWidget() {
-        guard hasOnboarded else { return }
+        guard active, accountID != nil, hasOnboarded else { return }
         let widgetSessions = sessions.map { session in
             guard session.status == .completed else { return session }
             var completed = session
@@ -437,6 +480,7 @@ final class CoachStore: ObservableObject {
         let hasOnboarded: Bool
         let workoutLogs: [UUID: WorkoutLog]?
         let nextPriorityWeek: Date?
+        let gymCoordinateData: Data?
     }
 }
 
