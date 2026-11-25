@@ -1,6 +1,6 @@
 # KAARIS — Entraînement, nutrition et suivi des habitudes
 
-Recherche mise à jour le 23 novembre 2026. Périmètre de la bêta iOS pour adultes. Les modèles ci-dessous servent à programmer des séances et à rédiger les fiches du coach. Le [catalogue iOS](../ios/Kaaris/Knowledge/kaaris-knowledge.json) réunit 18 fiches dans les catégories Musculation, Macronutriments, Micronutriments, Récupération et Objectifs.
+Recherche mise à jour le 25 novembre 2026. Périmètre de la bêta iOS pour adultes. Les modèles ci-dessous servent à programmer des séances et à rédiger les fiches du coach. Le [catalogue iOS](../ios/Kaaris/Knowledge/kaaris-knowledge.json) réunit 25 fiches dans les catégories Musculation, Macronutriments, Micronutriments, Récupération et Objectifs.
 
 ## 1. Repères scientifiques
 
@@ -183,3 +183,9 @@ Les développés sollicitent aussi les triceps. Le catalogue salle et haltères 
 ### Recherche Perplexity du 24 novembre
 
 Le service Search a répondu HTTP 200 à trois requêtes avec huit entrées brutes chacune. La recherche push/pull a renvoyé la méta-analyse de Ramos-Campo, celle sur les superséries et un essai aigu sur les séries antagonistes. La recherche volume/fréquence a renvoyé Pelland et la prise de position ACSM, ainsi que des pages d’index PubMed. La recherche récupération a renvoyé les essais sur les jours consécutifs et non consécutifs. La sélection ci-dessus cite les publications directement et laisse les index et les études aiguës hors des conclusions sur la croissance à long terme. [Perplexity Search API](https://docs.perplexity.ai/docs/search/quickstart).
+
+## 8. Repères et carnet nutrition KAARIS
+
+Le parcours de première utilisation propose un profil nutrition facultatif. L’app estime l’énergie avec Mifflin–St Jeor et les niveaux d’activité de l’EFSA, puis affiche des repères pour les macros, les fibres et 22 vitamines et minéraux. Cette estimation vise les profils adultes sans besoin nutritionnel particulier. Les besoins en fer peuvent notamment différer lorsque les pertes menstruelles sont élevées. [Mifflin–St Jeor](https://pubmed.ncbi.nlm.nih.gov/2305711/) · [EFSA](https://doi.org/10.2903/j.efsa.2013.3005) · [ANSES](https://www.anses.fr/fr/article/references-nutritionnelles-vitamines-mineraux)
+
+Le carnet couvre 3 484 aliments et 12 recettes. Les poids correspondent à la portion consommée telle que libellée dans Ciqual, par exemple crue, cuite ou égouttée. Un champ absent, une trace ou une mesure sous seuil laisse le total partiel. La B8 a un repère sans valeur alimentaire dans ce jeu de données. La B3 issue des aliments comptabilise la niacine renseignée. La transformation locale du fichier Excel est reproductible avec `python3 scripts/build-ciqual-catalog.py TABLE_CIQUAL.xlsx ios/Kaaris/Nutrition/kaaris-ciqual-2025.json`. [Anses, Table de composition nutritionnelle des aliments Ciqual 2025, Licence Ouverte 2.0](https://doi.org/10.57745/RDMHWY)

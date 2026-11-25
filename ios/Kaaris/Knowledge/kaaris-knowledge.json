@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "reviewedOn": "2026-11-23",
+  "reviewedOn": "2026-11-25",
   "articles": [
     {
       "id": "plan-semaine",
@@ -98,28 +98,142 @@
       "category": "Macronutriments",
       "summary": "Légumes secs, céréales complètes, fruits et légumes soutiennent la diversité des apports en fibres.",
       "sections": [
-        {"title": "Un repère population", "text": "Pour l’adulte, l’OMS recommande au moins 25 g par jour de fibres présentes naturellement dans les aliments, et au moins 400 g de fruits et légumes par jour. Tu peux utiliser ces repères sans peser tes repas."},
+        {"title": "Repères pour les adultes", "text": "L’OMS recommande au moins 25 g de fibres alimentaires naturellement présentes dans les aliments, et au moins 400 g de fruits et légumes par jour. L’Anses fixe l’apport satisfaisant en fibres à 30 g par jour. Au quotidien, varie les sources selon ce que tu tolères."},
         {"title": "Augmenter progressivement", "text": "Ajoute des lentilles à un repas, choisis du pain complet ou prends un fruit entier. Augmente les fibres progressivement selon ta tolérance et bois régulièrement."}
       ],
       "sources": [
         {"title": "OMS, alimentation saine (2026)", "url": "https://www.who.int/news-room/fact-sheets/detail/healthy-diet"},
         {"title": "OMS, recommandations sur les glucides et les fibres (2023)", "url": "https://www.who.int/publications/i/item/9789240073593"},
+        {"title": "Anses, références nutritionnelles pour les adultes", "url": "https://www.anses.fr/fr/system/files/NUT2012SA0103Ra-1.pdf"},
         {"title": "NIDDK, augmenter progressivement les fibres", "url": "https://www.niddk.nih.gov/health-information/digestive-diseases/constipation/eating-diet-nutrition"}
+      ]
+    },
+    {
+      "id": "reperes-blandine",
+      "title": "Les repères de Blandine pour mieux manger",
+      "category": "Nutrition pratique",
+      "summary": "Adapte tes repas à ton agenda, tes goûts, ta faim et ton entraînement.",
+      "sections": [
+        {"title": "Point de départ de la masterclass", "text": "Dans sa masterclass KONNECT du 23 novembre 2026, Blandine organise ses conseils autour de repas simples et variés qu’on peut répéter. Son image du 80/20 exprime une idée de souplesse. Elle laisse de la place aux plats qu’on aime et se passe de calcul."},
+        {"title": "Tes horaires", "text": "Construis un rythme adapté à ta faim et à tes séances. Un petit déjeuner peut t’aider à atteindre tes apports si ta matinée ou ta séance est chargée. Les travaux sur le petit déjeuner dépendent de la population et du protocole. Pars de ta routine et ajuste-la si besoin."},
+        {"title": "Les repères publics", "text": "Sur la semaine, varie les fruits, les légumes et les sources de protéines. Santé publique France recommande au moins deux repas avec des légumes secs par semaine et au moins un féculent complet par jour. Privilégie les huiles de colza, de noix ou d’olive."},
+        {"title": "Trouver un changement à garder", "text": "Choisis un repas que tu fais déjà et change un ingrédient ou le moment où tu le prépares. Observe si le résultat est agréable, facile à refaire et compatible avec ta faim. Si la fatigue revient, regarde aussi ton sommeil, ta charge et ton hydratation."}
+      ],
+      "sources": [
+        {"title": "Santé publique France, recommandations alimentaires pour les adultes", "url": "https://www.santepubliquefrance.fr/sites/default/files/rdd/document/42466_spf00000619.pdf"},
+        {"title": "Betts et al., essai sur le petit déjeuner chez des adultes (2014)", "url": "https://pubmed.ncbi.nlm.nih.gov/24898233/"},
+        {"title": "Assurance Maladie, fatigue et signes à observer", "url": "https://www.ameli.fr/assure/sante/themes/asthenie-fatigue/bons-reflexes-cas-faut-consulter"}
       ]
     },
     {
       "id": "assiette-sportive",
       "title": "Composer un repas de sport",
       "category": "Macronutriments",
-      "summary": "Pars d’un repas quotidien que tu aimes et que tu peux préparer facilement.",
+      "summary": "Assemble quatre familles d’aliments et adapte le repas à ta faim et à ton activité.",
       "sections": [
-        {"title": "Une base adaptable", "text": "Associe des légumes ou un fruit, une source de protéines et un féculent selon ton appétit. Ajoute une matière grasse que tu apprécies et garde de l’eau à portée."},
-        {"title": "Idées rapides", "text": "Riz, tofu et légumes sautés. Omelette, pain complet et salade. Semoule, pois chiches et légumes rôtis. Garde des ingrédients courants pour les jours chargés."},
-        {"title": "Ton action de la semaine", "text": "Choisis deux repas faciles à refaire ou prépare ta gourde avant de partir. Garde ce qui te convient au prochain bilan."}
+        {"title": "Les quatre familles de Blandine", "text": "La masterclass propose des protéines, des légumes pour les fibres, un féculent et une matière grasse. Exemple simple avec du tofu, des légumes sautés, du riz complet et de l’huile de colza. Les légumes secs apportent à la fois des protéines végétales, des glucides et des fibres."},
+        {"title": "Varie les ingrédients", "text": "Alterner lentilles, tofu, œufs, poissons ou laitages aide à diversifier les repas. Les huiles de colza, de noix ou d’olive et les fruits à coque non salés sont des options pour les matières grasses. Un plat mélangé peut réunir toutes ces familles."},
+        {"title": "Adapte à ta journée", "text": "Choisis les portions selon ta faim, ton activité et ton confort digestif. Après un entraînement habituel, retrouve un repas que tu digères bien. Garde de l’eau à disposition et choisis deux repas simples à refaire."}
       ],
       "sources": [
-        {"title": "Santé publique France, repères alimentaires adultes (2019)", "url": "https://www.santepubliquefrance.fr/index.php/nutrition-et-activite-physique/rapportsynthese/recommandations-relatives-a-lalimentation-a-lactivite-physique-et-a-la-sedentarite-pour-les-adultes"},
+        {"title": "Santé publique France, repères alimentaires adultes (2019)", "url": "https://www.santepubliquefrance.fr/sites/default/files/rdd/document/42466_spf00000619.pdf"},
         {"title": "Thomas, Erdman et Burke, nutrition et performance (2016)", "url": "https://pubmed.ncbi.nlm.nih.gov/26920240/"}
+      ]
+    },
+    {
+      "id": "solutions-cuisine-blandine",
+      "title": "Préparer des repas simples pour la semaine",
+      "category": "Nutrition pratique",
+      "summary": "Garde des solutions prêtes pour les jours chargés, même sans cuisine.",
+      "sections": [
+        {"title": "La méthode de Blandine", "text": "Pars de recettes que tu aimes déjà et que tu peux refaire. Blandine prenait des plats familiers comme des pâtes bolognaises ou un burger dans ses exemples. Tu peux ajouter des légumes à ta sauce et varier avec des lentilles ou choisir un pain complet avec le burger."},
+        {"title": "Une base, deux repas", "text": "Prépare une base de riz complet ou de semoule et des légumes rôtis. Fais un bol avec des pois chiches le premier jour, puis sers la même base avec des œufs ou du tofu. Des légumes surgelés et des légumes secs en conserve font gagner du temps."},
+        {"title": "Une option sans cuisiner", "text": "Assemble du pain complet, du houmous et des crudités. Pour une collation selon ta faim, essaie un fruit et du skyr ou un yaourt de soja. Blandine propose aussi une datte dénoyautée garnie de purée de cacahuète, éventuellement avec un peu de chocolat noir. Adapte selon tes allergies."},
+        {"title": "Conserve tes portions", "text": "Répartis le plat en petites portions et réfrigère-les dans les deux heures suivant la cuisson. Garde la zone la plus froide du réfrigérateur à 4 °C. Pour les portions prévues plus tard, utilise le congélateur. Respecte la durée de conservation prévue pour chaque produit."}
+      ],
+      "sources": [
+        {"title": "Santé publique France, améliorer un plat qu’on aime déjà", "url": "https://www.santepubliquefrance.fr/index.php/presse/commencez-par-ameliorer-un-plat-que-vous-aimez-deja"},
+        {"title": "Anses, hygiène et refroidissement des plats", "url": "https://www.anses.fr/fr/content/en-cuisine-le-meilleur-ingredient-c-est-l-hygiene"},
+        {"title": "Anses, température et conservation au réfrigérateur", "url": "https://www.anses.fr/fr/article/conseils-dhygiene-cuisine-dix-gestes-simples-prevenir-risques-microbiologiques"}
+      ]
+    },
+    {
+      "id": "ordre-repas-glycemie",
+      "title": "Glycémie, ordre du repas et fatigue",
+      "category": "Nutrition pratique",
+      "summary": "L’ordre des aliments peut modifier la glycémie après le repas. L’effet sur ton énergie reste incertain.",
+      "sections": [
+        {"title": "L’idée de la masterclass", "text": "Blandine propose parfois de commencer par les légumes et de garder le féculent pour la fin. Essaie cet ordre si le repas s’y prête. Un plat mélangé reste pratique et te permet d’associer les mêmes familles d’aliments."},
+        {"title": "Ce que l’essai a mesuré", "text": "Dans un petit essai croisé, 11 adultes traités pour un diabète de type 2 ont mangé un même repas dans deux ordres différents. La glycémie à court terme a changé. L’effet précis chez d’autres personnes et les effets sur la fatigue ou la concentration restent incertains."},
+        {"title": "Si la fatigue revient", "text": "Observe le moment du repas, le sommeil, la charge de la journée et l’hydratation. Une sensation de fatigue a plusieurs causes possibles. Si elle persiste ou s’accompagne d’autres symptômes, parle-en à ton médecin. Pour un diabète traité, suis les conseils de ton équipe soignante."}
+      ],
+      "sources": [
+        {"title": "Shukla et al., étude pilote sur l’ordre des aliments (2015)", "url": "https://pubmed.ncbi.nlm.nih.gov/26106234/"},
+        {"title": "Assurance Maladie, fatigue et signes à observer", "url": "https://www.ameli.fr/assure/sante/themes/asthenie-fatigue/bons-reflexes-cas-faut-consulter"}
+      ]
+    },
+    {
+      "id": "cafeine-sommeil",
+      "title": "Caféine, vigilance et sommeil",
+      "category": "Nutrition pratique",
+      "summary": "Ajuste l’heure et la quantité de caféine à ton sommeil et à ta sensibilité.",
+      "sections": [
+        {"title": "Repère de la masterclass", "text": "Blandine décrit une routine avec du décaféiné et invite à regarder l’heure du dernier café. Café, thé, matcha, boissons énergisantes et certains compléments peuvent tous apporter de la caféine. La dose varie selon le produit et la préparation."},
+        {"title": "Ce que dit l’EFSA", "text": "Chez l’adulte sain, hors grossesse, l’EFSA considère qu’une prise allant jusqu’à 200 mg et des prises réparties allant jusqu’à 400 mg par jour, toutes sources confondues, ne posent généralement pas de problème de sécurité. Une prise de 100 mg près du coucher peut perturber le sommeil de certaines personnes."},
+        {"title": "Observe ton sommeil", "text": "Si tu dors mal, essaie d’avancer l’heure de ta dernière prise ou de choisir du décaféiné l’après-midi. Compare ton sommeil sur quelques jours. En cas de grossesse, de traitement ou de sensibilité particulière, utilise des repères adaptés à ta situation."}
+      ],
+      "sources": [
+        {"title": "EFSA, avis scientifique sur la sécurité de la caféine (2015)", "url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2015.4102"},
+        {"title": "EFSA, repères sur la caféine en français", "url": "https://www.efsa.europa.eu/fr/topics/topic/caffeine"}
+      ]
+    },
+    {
+      "id": "aliments-ultratransformes",
+      "title": "Choisir des aliments pour le quotidien",
+      "category": "Nutrition pratique",
+      "summary": "Garde des options pratiques et regarde la place de chaque aliment dans ta semaine.",
+      "sections": [
+        {"title": "Une question de fréquence", "text": "Blandine propose de regarder ce qui revient souvent dans les repas et de garder une place aux plats qu’on aime. Si tu veux varier, choisis une option facile que tu peux acheter ou cuisiner régulièrement. Conserves de légumes secs, flocons d’avoine, légumes surgelés et œufs en sont des exemples."},
+        {"title": "Ce qu’on sait", "text": "Dans un essai contrôlé auprès de 20 adultes, les participants ont consommé plus d’énergie pendant les deux semaines du menu ultratransformé étudié. L’Anses juge le niveau de preuve faible pour les liens observés avec certaines maladies à long terme. Ces données portent sur des régimes, avec des résultats qui dépendent du contexte."},
+        {"title": "Un repère en courses", "text": "Pour deux produits de la même famille, compare les ingrédients ou le Nutri-Score quand il est affiché. Choisis aussi en fonction de ton budget, de ce que tu apprécies et du repas que tu veux assembler."}
+      ],
+      "sources": [
+        {"title": "Hall et al., essai contrôlé sur les menus ultratransformés (2019)", "url": "https://pubmed.ncbi.nlm.nih.gov/31105044/"},
+        {"title": "Anses, effets potentiels des aliments dits ultratransformés (2025)", "url": "https://www.anses.fr/fr/actualite/aliments-dits-ultratransformes-mieux-comprendre-leurs-effets-potentiels-sante"},
+        {"title": "Santé publique France, repères alimentaires adultes (2019)", "url": "https://www.santepubliquefrance.fr/sites/default/files/rdd/document/42466_spf00000619.pdf"}
+      ]
+    },
+    {
+      "id": "complements-nutrition",
+      "title": "Compléments alimentaires et sport",
+      "category": "Nutrition pratique",
+      "summary": "Fais le point sur ton alimentation et tes besoins avant de choisir un complément.",
+      "sections": [
+        {"title": "Point de départ de Blandine", "text": "La masterclass évoque le fer, les vitamines, la créatine, les électrolytes, la mélatonine et la spiruline. Le repère pratique est de se demander à quel besoin concret le produit répond. Le besoin dépend de tes apports, de ta situation et, pour certains compléments, d’un bilan."},
+        {"title": "Vitamine B12, fer et vitamine D", "text": "Si tu manges exclusivement végétal, organise une source fiable de vitamine B12 avec un professionnel. L’Anses indique que la spiruline est inadaptée pour couvrir ce besoin. Si tu envisages du fer ou de la vitamine D, fais le point sur tes besoins, tes apports et les produits déjà pris."},
+        {"title": "Performance et sommeil", "text": "Les besoins liés à un effort long ou à la chaleur se réfléchissent selon les conditions. La créatine relève d’un objectif sportif précis. Si tu envisages de la mélatonine pour des troubles du sommeil ou si tu combines plusieurs produits et médicaments, demande l’avis d’un médecin ou d’un pharmacien."}
+      ],
+      "sources": [
+        {"title": "Anses, repères pour les régimes végétariens (2025)", "url": "https://www.anses.fr/fr/actualite/regimes-vegetariens-effets-sante-reperes-alimentaires"},
+        {"title": "Anses, spiruline et vitamine B12", "url": "https://www.anses.fr/fr/actualite/complements-alimentaires-base-spiruline-privilegier-circuits-dapprovisionnement-mieux"},
+        {"title": "Anses, risques liés aux compléments pour sportifs (2024)", "url": "https://www.anses.fr/fr/actualite/complements-alimentaires-aliments-enrichis-sportifs-consommations-risque"},
+        {"title": "Anses, précautions pour les compléments à base de mélatonine", "url": "https://www.anses.fr/fr/actualite/lanses-recommande-certaines-populations-deviter-consommation-complements-alimentaires"}
+      ]
+    },
+    {
+      "id": "suivi-alimentaire-simple",
+      "title": "Faire le point sur tes repas sans les peser",
+      "category": "Nutrition pratique",
+      "summary": "Suis une habitude à la fois et garde tes observations facultatives.",
+      "sections": [
+        {"title": "L’approche présentée par Blandine", "text": "Blandine décrit un bilan régulier, des idées de recettes selon les goûts et, pour les personnes qui le souhaitent, un plan avec un regard diététique. Le principe repris ici est d’apprendre des repas réutilisables, qui laissent de la place à tes préférences et à ton emploi du temps."},
+        {"title": "Ton bilan d’une minute", "text": "Choisis un repas ou une collation à simplifier. Après quelques jours, note si tu as pu refaire le repas, s’il te plaisait et comment tu t’es senti. Tu peux aussi noter l’heure et le contexte. Garde une seule modification pour la semaine suivante."},
+        {"title": "Les limites d’une photo", "text": "Une photo peut servir d’aide-mémoire. Les quantités, les huiles et les ingrédients cachés restent difficiles à estimer, même avec des méthodes étudiées. Utilise la photo pour retrouver des idées de plats et partage les détails utiles si tu cherches un avis professionnel."},
+        {"title": "Quand demander un avis", "text": "Cette fiche donne des repères généraux aux adultes. Pour un diabète, une grossesse, un traitement, des symptômes persistants ou des difficultés avec l’alimentation, parle de tes objectifs à un professionnel. Tu peux arrêter le suivi s’il devient anxiogène ou prend trop de place."}
+      ],
+      "sources": [
+        {"title": "Martin et al., validation de l’estimation à partir de photos (2012)", "url": "https://pubmed.ncbi.nlm.nih.gov/22134199/"},
+        {"title": "Assurance Maladie, fatigue et situations qui justifient une consultation", "url": "https://www.ameli.fr/assure/sante/themes/asthenie-fatigue/bons-reflexes-cas-faut-consulter"}
       ]
     },
     {
@@ -171,11 +285,12 @@
       "summary": "La vitamine B12 contribue au fonctionnement du système nerveux et à la formation des globules rouges.",
       "sections": [
         {"title": "Où la trouver", "text": "Poissons, viandes, œufs et produits laitiers en apportent. Certains aliments enrichis mentionnent la quantité de B12 sur leur étiquette."},
-        {"title": "Repère et alimentation végétalienne", "text": "L’Anses indique un apport satisfaisant de 4 µg par jour pour l’adulte. Si tu manges exclusivement végétal, parle à un professionnel de la façon d’assurer une source fiable de B12."}
+        {"title": "Repère et alimentation végétalienne", "text": "L’Anses indique un apport satisfaisant de 4 µg par jour pour l’adulte. Si tu manges exclusivement végétal, prévois une source fiable, par exemple des aliments enrichis ou un complément adapté avec l’aide d’un professionnel. La spiruline est inadaptée pour assurer cet apport."}
       ],
       "sources": [
         {"title": "Anses, références pour la vitamine B12", "url": "https://www.anses.fr/fr/article/references-nutritionnelles-vitamines-mineraux"},
-        {"title": "Anses, repères pour les régimes végétariens (2025)", "url": "https://www.anses.fr/fr/actualite/regimes-vegetariens-effets-sante-reperes-alimentaires"}
+        {"title": "Anses, repères pour les régimes végétariens (2025)", "url": "https://www.anses.fr/fr/actualite/regimes-vegetariens-effets-sante-reperes-alimentaires"},
+        {"title": "Anses, spiruline et vitamine B12", "url": "https://www.anses.fr/fr/actualite/complements-alimentaires-base-spiruline-privilegier-circuits-dapprovisionnement-mieux"}
       ]
     },
     {

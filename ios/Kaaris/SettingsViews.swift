@@ -28,7 +28,7 @@ struct OnboardingScreen: View {
                 Button("Définir mon objectif") { step = 1 }
                     .buttonStyle(ActionStyle())
                     .disabled(!isAdult)
-            } else {
+            } else if step == 1 {
                 VStack(alignment: .leading, spacing: 4) {
                     SectionLabel(text: "TON PROGRAMME")
                     KTitle(text: "ON PART D’OÙ ?")
@@ -38,6 +38,15 @@ struct OnboardingScreen: View {
                     .font(.subheadline.weight(.semibold))
                 Toggle("Je veux recevoir les relances de mes séances", isOn: $wantsReminders)
                     .font(.subheadline.weight(.semibold))
+                Button("Continuer vers la nutrition") { step = 2 }
+                    .buttonStyle(ActionStyle())
+                Button("Retour") { step = 0 }.buttonStyle(ActionStyle(filled: false))
+            } else {
+                SectionLabel(text: "Tes repères nutrition")
+                KTitle(text: "QU’EST-CE QU’ON MANGE ?")
+                NutritionSetupFields(profile: $store.profile)
+                Text("Tu peux continuer avec ou sans estimation.")
+                    .font(.footnote).foregroundStyle(muted)
                 Button("Créer mes séances") {
                     guard wantsReminders else {
                         store.finishOnboarding()
@@ -52,7 +61,7 @@ struct OnboardingScreen: View {
                 }
                 .buttonStyle(ActionStyle())
                 .disabled(finishing)
-                Button("Retour") { step = 0 }.buttonStyle(ActionStyle(filled: false))
+                Button("Retour") { step = 1 }.buttonStyle(ActionStyle(filled: false))
             }
         }
         .scrollDismissesKeyboard(.interactively)
@@ -114,7 +123,7 @@ struct ProfileFields: View {
     }
 }
 
-private struct OptionalNumberField: View {
+struct OptionalNumberField: View {
     let label: String
     @Binding var value: Double?
     let range: ClosedRange<Double>
@@ -314,6 +323,16 @@ struct SettingsScreen: View {
 
             SectionLabel(text: "OBJECTIF ET PROFIL")
             ProfileFields(profile: $store.profile)
+            NavigationLink {
+                KPage {
+                    KTitle(text: "MON PROFIL NUTRITION")
+                    NutritionSetupFields(profile: $store.profile)
+                }
+                .toolbar(.visible, for: .navigationBar)
+            } label: {
+                Label("Profil nutrition", systemImage: "fork.knife")
+            }
+            .buttonStyle(ActionStyle(filled: false))
 
             NavigationLink {
                 KPage {

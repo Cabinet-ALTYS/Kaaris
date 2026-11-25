@@ -45,6 +45,7 @@ struct CoachProfile: Codable, Equatable {
     var preferredHour = 18
     var heightCM: Double?
     var weightKG: Double?
+    var nutrition: NutritionProfile?
     var screenMinutes: Int?
     var cigarettesPerDay: Int?
     var alcoholServingsPerWeek: Int?
@@ -53,6 +54,27 @@ struct CoachProfile: Codable, Equatable {
 
     var usesPriorityPlan: Bool {
         upperBodyPriorityPlan == true && sessionsPerWeek == 5 && equipment != .bodyweight
+    }
+
+    var nutritionSettings: NutritionProfile {
+        get {
+            var settings = nutrition ?? NutritionProfile()
+            if nutrition == nil {
+                if goal == .buildMuscle { settings.objective = .gainMuscle }
+                if goal == .loseWeight { settings.objective = .loseWeight }
+            }
+            settings.heightCM = heightCM
+            settings.weightKG = weightKG
+            return settings
+        }
+        set {
+            heightCM = newValue.heightCM
+            weightKG = newValue.weightKG
+            var settings = newValue
+            settings.heightCM = nil
+            settings.weightKG = nil
+            nutrition = settings
+        }
     }
 }
 
@@ -184,6 +206,7 @@ final class CoachStore: ObservableObject {
     @Published private(set) var hasOnboarded: Bool { didSet { save() } }
     @Published private(set) var notificationDelivery = ReminderDelivery.initial
     @Published private(set) var workoutLogs: [UUID: WorkoutLog] = [:]
+    @Published private(set) var nutritionEntries: [NutritionEntry] = [] { didSet { save() } }
     @Published var gymCoordinateData: Data? { didSet { save() } }
 
     let accountID: UUID?
@@ -242,6 +265,7 @@ final class CoachStore: ObservableObject {
             sessions = snapshot.sessions
             hasOnboarded = snapshot.hasOnboarded
             workoutLogs = snapshot.workoutLogs ?? [:]
+            nutritionEntries = snapshot.nutritionEntries ?? []
             nextPriorityWeek = snapshot.nextPriorityWeek
             gymCoordinateData = snapshot.gymCoordinateData
         } else {
@@ -445,6 +469,21 @@ final class CoachStore: ObservableObject {
         await ReminderScheduler.clearAccountNotifications()
     }
 
+    func saveNutritionEntry(_ entry: NutritionEntry) {
+        guard active, !entry.ingredients.isEmpty,
+              entry.ingredients.allSatisfy({ NutritionIngredient.allowedGrams.contains($0.grams) }) else { return }
+        if let index = nutritionEntries.firstIndex(where: { $0.id == entry.id }) {
+            nutritionEntries[index] = entry
+        } else {
+            nutritionEntries.append(entry)
+        }
+    }
+
+    func removeNutritionEntry(_ id: UUID) {
+        guard active else { return }
+        nutritionEntries.removeAll { $0.id == id }
+    }
+
     private func save() {
         guard active, let storageKey else { return }
         let snapshot = Snapshot(
@@ -454,7 +493,8 @@ final class CoachStore: ObservableObject {
             hasOnboarded: hasOnboarded,
             workoutLogs: workoutLogs,
             nextPriorityWeek: nextPriorityWeek,
-            gymCoordinateData: gymCoordinateData
+            gymCoordinateData: gymCoordinateData,
+            nutritionEntries: nutritionEntries
         )
         if let data = try? JSONEncoder().encode(snapshot) {
             defaults.set(data, forKey: storageKey)
@@ -481,6 +521,7 @@ final class CoachStore: ObservableObject {
         let workoutLogs: [UUID: WorkoutLog]?
         let nextPriorityWeek: Date?
         let gymCoordinateData: Data?
+        let nutritionEntries: [NutritionEntry]?
     }
 }
 
