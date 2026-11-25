@@ -133,6 +133,9 @@ struct OptionalNumberField: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
+            if !input.isEmpty {
+                Text(label).font(.caption).foregroundStyle(muted).accessibilityHidden(true)
+            }
             TextField(label, text: $input)
                 .keyboardType(allowsDecimal ? .decimalPad : .numberPad)
                 .focused($focused)

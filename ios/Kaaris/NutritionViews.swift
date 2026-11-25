@@ -189,8 +189,23 @@ struct NutritionScreen: View {
     }
 
     private func micros(intake: NutritionIntake) -> some View {
-        DisclosureGroup("Vitamines et minéraux", isExpanded: $expandedMicros) {
-            VStack(alignment: .leading, spacing: 13) {
+        VStack(alignment: .leading, spacing: 13) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) { expandedMicros.toggle() }
+            } label: {
+                HStack {
+                    Text("Vitamines et minéraux")
+                    Spacer()
+                    Image(systemName: expandedMicros ? "chevron.down" : "chevron.right")
+                        .foregroundStyle(acid)
+                        .accessibilityHidden(true)
+                }
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityValue(expandedMicros ? "Ouvert" : "Fermé")
+            if expandedMicros {
                 Text("Ces repères s’interprètent sur la durée. Une journée de carnet ne permet pas d’identifier une carence.")
                     .font(.caption).foregroundStyle(muted)
                 ForEach(NutritionNutrient.allCases) { nutrient in
@@ -206,7 +221,6 @@ struct NutritionScreen: View {
                 Text("Ciqual ne renseigne pas la biotine (B8). Pour la B3, le carnet reprend la niacine renseignée, sans contribution du tryptophane.")
                     .font(.caption).foregroundStyle(muted)
             }
-            .padding(.top, 12)
         }
         .font(.subheadline.weight(.semibold))
         .kPanel()
